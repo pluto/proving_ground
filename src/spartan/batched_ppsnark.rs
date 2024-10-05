@@ -1,6 +1,14 @@
 //! batched pp snark
 //!
-//!
+
+use core::slice;
+use std::sync::Arc;
+
+use ff::Field;
+use itertools::{chain, Itertools as _};
+use once_cell::sync::*;
+use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     digest::{DigestComputer, SimpleDigestible},
@@ -12,18 +20,19 @@ use crate::{
             eq::EqPolynomial,
             identity::IdentityPolynomial,
             masked_eq::MaskedEqPolynomial,
-            multilinear::MultilinearPolynomial,
-            multilinear::SparsePolynomial,
+            multilinear::{MultilinearPolynomial, SparsePolynomial},
             power::PowPolynomial,
             univariate::{CompressedUniPoly, UniPoly},
         },
         powers,
         ppsnark::{R1CSShapeSparkCommitment, R1CSShapeSparkRepr},
-        sumcheck::engine::{
-            InnerSumcheckInstance, MemorySumcheckInstance, OuterSumcheckInstance, SumcheckEngine,
-            WitnessBoundSumcheck,
+        sumcheck::{
+            engine::{
+                InnerSumcheckInstance, MemorySumcheckInstance, OuterSumcheckInstance,
+                SumcheckEngine, WitnessBoundSumcheck,
+            },
+            SumcheckProof,
         },
-        sumcheck::SumcheckProof,
         PolyEvalInstance, PolyEvalWitness,
     },
     traits::{
@@ -34,13 +43,6 @@ use crate::{
     },
     zip_with, zip_with_for_each, Commitment, CommitmentKey, CompressedCommitment,
 };
-use core::slice;
-use ff::Field;
-use itertools::{chain, Itertools as _};
-use once_cell::sync::*;
-use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 /// A type that represents the prover's key
 #[derive(Debug)]
@@ -298,8 +300,9 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARKTrait<E>
             })
             .collect::<Vec<_>>();
 
-        // Pad both W,E to have the same size. This is inefficient for W since the second half is empty,
-        // but it makes it easier to handle the batching at the end.
+        // Pad both W,E to have the same size. This is inefficient for W since the
+        // second half is empty, but it makes it easier to handle the batching
+        // at the end.
         let polys_E = polys_E
             .into_par_iter()
             .zip_eq(Nis.par_iter())
@@ -388,9 +391,10 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARKTrait<E>
         // we now need to prove three claims for each instance
         // (outer)
         //   0 = \sum_x poly_tau(x) * (poly_Az(x) * poly_Bz(x) - poly_uCz_E(x))
-        //   eval_Az_at_tau + c * eval_Bz_at_tau + c^2 * eval_Cz_at_tau = (Az+c*Bz+c^2*Cz)(tau)
-        // (inner)
-        //   eval_Az_at_tau + c * eval_Bz_at_tau + c^2 * eval_Cz_at_tau = \sum_y L_row(y) * (val_A(y) + c * val_B(y) + c^2 * val_C(y)) * L_col(y)
+        //   eval_Az_at_tau + c * eval_Bz_at_tau + c^2 * eval_Cz_at_tau =
+        // (Az+c*Bz+c^2*Cz)(tau) (inner)
+        //   eval_Az_at_tau + c * eval_Bz_at_tau + c^2 * eval_Cz_at_tau = \sum_y
+        // L_row(y) * (val_A(y) + c * val_B(y) + c^2 * val_C(y)) * L_col(y)
         // (mem)
         //   L_row(i) = eq(tau, row(i))
         //   L_col(i) = z(col(i))
@@ -448,8 +452,9 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARKTrait<E>
             let gamma = transcript.squeeze(b"g")?;
             let r = transcript.squeeze(b"r")?;
 
-            // We start by computing oracles and auxiliary polynomials to help prove the claim
-            // oracles correspond to [t_plus_r_inv_row, w_plus_r_inv_row, t_plus_r_inv_col, w_plus_r_inv_col]
+            // We start by computing oracles and auxiliary polynomials to help prove the
+            // claim oracles correspond to [t_plus_r_inv_row, w_plus_r_inv_row,
+            // t_plus_r_inv_col, w_plus_r_inv_col]
             let (comms_mem_oracles, polys_mem_oracles, mem_aux) = pk
                 .S_repr
                 .iter()
@@ -695,7 +700,8 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARKTrait<E>
         .collect::<Vec<_>>();
 
         for evals in evals_vec.iter() {
-            transcript.absorb(b"e", &evals.as_slice()); // comm_vec is already in the transcript
+            transcript.absorb(b"e", &evals.as_slice()); // comm_vec is already
+                                                        // in the transcript
         }
         let evals_vec = evals_vec.into_iter().flatten().collect::<Vec<_>>();
 
@@ -1017,7 +1023,8 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARKTrait<E>
 
         // Add all Sumcheck evaluations to the transcript
         for evals in evals_vec.iter() {
-            transcript.absorb(b"e", &evals.as_slice()); // comm_vec is already in the transcript
+            transcript.absorb(b"e", &evals.as_slice()); // comm_vec is already
+                                                        // in the transcript
         }
 
         let c = transcript.squeeze(b"c")?;
@@ -1073,38 +1080,44 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARKTrait<E>
 }
 
 impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARK<E, EE> {
-    /// Runs the batched Sumcheck protocol for the claims of multiple instance of possibly different sizes.
+    /// Runs the batched Sumcheck protocol for the claims of multiple instance
+    /// of possibly different sizes.
     ///
     /// # Details
     ///
-    /// In order to avoid padding all polynomials to the same maximum size, we adopt the following strategy.
+    /// In order to avoid padding all polynomials to the same maximum size, we
+    /// adopt the following strategy.
     ///
     /// Let n be the number of variables for the largest instance,
     /// and let m be the number of variables for a shorter one.
-    /// Let P(X_{0},...,X_{m-1}) be one of the MLEs of the short instance, which has been committed to
-    /// by taking the MSM of its evaluations with the first 2^m basis points of the commitment key.
+    /// Let P(X_{0},...,X_{m-1}) be one of the MLEs of the short instance, which
+    /// has been committed to by taking the MSM of its evaluations with the
+    /// first 2^m basis points of the commitment key.
     ///
     /// This Sumcheck prover will interpret it as the polynomial
     ///   P'(X_{0},...,X_{n-1}) = P(X_{n-m},...,X_{n-1}),
-    /// whose MLE evaluations over {0,1}^m is equal to 2^{n-m} repetitions of the evaluations of P.
+    /// whose MLE evaluations over {0,1}^m is equal to 2^{n-m} repetitions of
+    /// the evaluations of P.
     ///
-    /// In order to account for these "imagined" repetitions, the initial claims for this short instances
-    /// are scaled by 2^{n-m}.
+    /// In order to account for these "imagined" repetitions, the initial claims
+    /// for this short instances are scaled by 2^{n-m}.
     ///
-    /// For the first n-m rounds, the univariate polynomials relating to this shorter claim will be constant,
-    /// and equal to the initial claims, scaled by 2^{n-m-i}, where i is the round number.
-    /// By definition, P' does not depend on X_i, so binding P' to r_i has no effect on the evaluations.
-    /// The Sumcheck prover will then interpret the polynomial P' as having half as many repetitions
-    /// in the next round.
+    /// For the first n-m rounds, the univariate polynomials relating to this
+    /// shorter claim will be constant, and equal to the initial claims,
+    /// scaled by 2^{n-m-i}, where i is the round number. By definition, P'
+    /// does not depend on X_i, so binding P' to r_i has no effect on the
+    /// evaluations. The Sumcheck prover will then interpret the polynomial
+    /// P' as having half as many repetitions in the next round.
     ///
-    /// When we get to round n-m, the Sumcheck proceeds as usual since the polynomials are the expected size
-    /// for the round.
+    /// When we get to round n-m, the Sumcheck proceeds as usual since the
+    /// polynomials are the expected size for the round.
     ///
     /// Note that at the end of the protocol, the prover returns the evaluation
     ///   u' = P'(r_{0},...,r_{n-1}) = P(r_{n-m},...,r_{n-1})
     /// However, the polynomial we actually committed to over {0,1}^n is
-    ///   P''(X_{0},...,X_{n-1}) = L_0(X_{0},...,X_{n-m-1}) * P(X_{n-m},...,X_{n-1})
-    /// The SNARK prover/verifier will need to rescale the evaluation by the first Lagrange polynomial
+    ///   P''(X_{0},...,X_{n-1}) = L_0(X_{0},...,X_{n-m-1}) *
+    /// P(X_{n-m},...,X_{n-1}) The SNARK prover/verifier will need to
+    /// rescale the evaluation by the first Lagrange polynomial
     ///   u'' = L_0(r_{0},...,r_{n-m-1}) * u'
     /// in order batch all evaluations with a single PCS call.
     fn prove_helper<T1, T2, T3, T4>(
@@ -1156,8 +1169,8 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARK<E, EE> {
         assert!(inner.iter().all(|inst| inst.degree() == degree));
         assert!(witness.iter().all(|inst| inst.degree() == degree));
 
-        // Collect all claims from the instances. If the instances is defined over `m` variables,
-        // which is less that the total number of rounds `n`,
+        // Collect all claims from the instances. If the instances is defined over `m`
+        // variables, which is less that the total number of rounds `n`,
         // the individual claims σ are scaled by 2^{n-m}.
         let claims = zip_with!(
             iter,
@@ -1177,24 +1190,27 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARK<E, EE> {
         let s = transcript.squeeze(b"r")?;
         let coeffs = powers(&s, claims.len());
 
-        // At the start of each round, the running claim is equal to the random linear combination
-        // of the Sumcheck claims, evaluated over the bound polynomials.
-        // Initially, it is equal to the random linear combination of the scaled input claims.
+        // At the start of each round, the running claim is equal to the random linear
+        // combination of the Sumcheck claims, evaluated over the bound
+        // polynomials. Initially, it is equal to the random linear combination
+        // of the scaled input claims.
         let mut running_claim = zip_with!(iter, (claims, coeffs), |c_1, c_2| *c_1 * c_2).sum();
 
-        // Keep track of the verifier challenges r, and the univariate polynomials sent by the prover
-        // in each round
+        // Keep track of the verifier challenges r, and the univariate polynomials sent
+        // by the prover in each round
         let mut r: Vec<E::Scalar> = Vec::new();
         let mut cubic_polys: Vec<CompressedUniPoly<E::Scalar>> = Vec::new();
 
         for i in 0..num_rounds {
-            // At the start of round i, there input polynomials are defined over at most n-i variables.
+            // At the start of round i, there input polynomials are defined over at most n-i
+            // variables.
             let remaining_variables = num_rounds - i;
 
-            // For each claim j, compute the evaluations of its univariate polynomial S_j(X_i)
-            // at X = 0, 2, 3. The polynomial is such that S_{j-1}(r_{j-1}) = S_j(0) + S_j(1).
-            // If the number of variable m of the claim is m < n-i, then the polynomial is
-            // constants and equal to the initial claim σ_j scaled by 2^{n-m-i-1}.
+            // For each claim j, compute the evaluations of its univariate polynomial
+            // S_j(X_i) at X = 0, 2, 3. The polynomial is such that
+            // S_{j-1}(r_{j-1}) = S_j(0) + S_j(1). If the number of variable m
+            // of the claim is m < n-i, then the polynomial is constants and
+            // equal to the initial claim σ_j scaled by 2^{n-m-i-1}.
             let evals = zip_with!(
                 par_iter,
                 (mem, outer, inner, witness),
@@ -1274,8 +1290,9 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARK<E, EE> {
             cubic_polys.push(poly.compress());
         }
 
-        // Collect evaluations at (r_{n-m}, ..., r_{n-1}) of polynomials over all claims,
-        // where m is the initial number of variables the individual claims are defined over.
+        // Collect evaluations at (r_{n-m}, ..., r_{n-1}) of polynomials over all
+        // claims, where m is the initial number of variables the individual
+        // claims are defined over.
         let claims_outer = outer.into_iter().map(|inst| inst.final_claims()).collect();
         let claims_inner = inner.into_iter().map(|inst| inst.final_claims()).collect();
         let claims_mem = mem.into_iter().map(|inst| inst.final_claims()).collect();
@@ -1294,12 +1311,13 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARK<E, EE> {
         ))
     }
 
-    /// In round i, computes the evaluations at X_i = 0, 2, 3 of the univariate polynomials S(X_i)
-    /// for each claim in the instance.
-    /// Let `n` be the total number of Sumcheck rounds, and assume the instance is defined over `m` variables.
-    /// We define `remaining_variables` as n-i.
-    /// If m < n-i, then the polynomials in the instance are not defined over X_i, so the univariate
-    /// polynomial is constant and equal to 2^{n-m-i-1}*σ, where σ is the initial claim.
+    /// In round i, computes the evaluations at X_i = 0, 2, 3 of the univariate
+    /// polynomials S(X_i) for each claim in the instance.
+    /// Let `n` be the total number of Sumcheck rounds, and assume the instance
+    /// is defined over `m` variables. We define `remaining_variables` as
+    /// n-i. If m < n-i, then the polynomials in the instance are not
+    /// defined over X_i, so the univariate polynomial is constant and equal
+    /// to 2^{n-m-i-1}*σ, where σ is the initial claim.
     fn get_evals<T: SumcheckEngine<E>>(
         inst: &T,
         remaining_variables: usize,
@@ -1318,9 +1336,10 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARK<E, EE> {
         }
     }
 
-    /// In round i after receiving challenge r_i, we partially evaluate all polynomials in the instance
-    /// at X_i = r_i. If the instance is defined over m variables m which is less than n-i, then
-    /// the polynomials do not depend on X_i, so binding them to r_i has no effect.  
+    /// In round i after receiving challenge r_i, we partially evaluate all
+    /// polynomials in the instance at X_i = r_i. If the instance is defined
+    /// over m variables m which is less than n-i, then the polynomials do
+    /// not depend on X_i, so binding them to r_i has no effect.
     fn bind<T: SumcheckEngine<E>>(inst: &mut T, remaining_variables: usize, r: &E::Scalar) {
         let num_instance_variables = inst.size().log_2(); // m
         if remaining_variables <= num_instance_variables {
@@ -1328,8 +1347,9 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> BatchedRelaxedR1CSSNARK<E, EE> {
         }
     }
 
-    /// Given an instance defined over m variables, the sum over n = `remaining_variables` is equal
-    /// to the initial claim scaled by 2^{n-m}, when m ≤ n.   
+    /// Given an instance defined over m variables, the sum over n =
+    /// `remaining_variables` is equal to the initial claim scaled by
+    /// 2^{n-m}, when m ≤ n.
     fn scaled_claims<T: SumcheckEngine<E>>(inst: &T, remaining_variables: usize) -> Vec<E::Scalar> {
         let num_instance_variables = inst.size().log_2(); // m
         let num_repetitions = 1 << (remaining_variables - num_instance_variables);

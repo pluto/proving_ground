@@ -84,7 +84,8 @@ macro_rules! nested_idents {
     };
 }
 
-// Fold-right like zipping, with an optional function `f` to apply to each argument
+// Fold-right like zipping, with an optional function `f` to apply to each
+// argument
 #[doc(hidden)]
 #[macro_export]
 macro_rules! zip_all {
