@@ -188,6 +188,5 @@ impl<G: Group, T: TranscriptReprTrait<G>> TranscriptReprTrait<G> for &[T] {
     }
 }
 
-pub mod circuit;
 pub mod evaluation;
 pub mod snark;

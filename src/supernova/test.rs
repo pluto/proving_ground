@@ -1,7 +1,6 @@
 use core::marker::PhantomData;
 use std::fmt::Write;
 
-use abomonation::Abomonation;
 use bellpepper_core::{num::AllocatedNum, ConstraintSystem, SynthesisError};
 use expect_test::{expect, Expect};
 use ff::{Field, PrimeField};
@@ -837,9 +836,6 @@ where
 fn test_nivc_nondet_with<E1>()
 where
     E1: CurveCycleEquipped,
-    // this is due to the reliance on Abomonation
-    <<E1 as Engine>::Scalar as PrimeField>::Repr: Abomonation,
-    <<Dual<E1> as Engine>::Scalar as PrimeField>::Repr: Abomonation,
 {
     let circuit_secondary = TrivialSecondaryCircuit::default();
 

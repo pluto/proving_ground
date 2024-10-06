@@ -1,5 +1,4 @@
 //! Non-hiding Zeromorph scheme for Multilinear Polynomials.
-//!
 
 use std::{borrow::Borrow, iter, marker::PhantomData, sync::Arc};
 

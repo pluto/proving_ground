@@ -44,6 +44,14 @@ use crate::{
     zip_with, Commitment,
 };
 
+// NOTE: This trait below is actually useful outside of this if you want to
+// implement a step circuit on your own type. We use it in our prover code.
+// However, there is a conflicting "StepCircuit" in
+// `crate::traits::circuit::StepCircuit` which I deleted. We should likely have
+// a supertrait here for NIVC that provides the circuit index because we only
+// want that when we are using NIVC. Program counter should be able to be put to
+// `None` otherwise, or we could handle that slightly differently too
+
 /// A helper trait for a step of the incremental computation for `SuperNova`
 /// (i.e., circuit for F) -- to be implemented by applications.
 pub trait StepCircuit<F: PrimeField>: Send + Sync + Clone {
@@ -67,6 +75,9 @@ pub trait StepCircuit<F: PrimeField>: Send + Sync + Clone {
         z: &[AllocatedNum<F>],
     ) -> Result<(Option<AllocatedNum<F>>, Vec<AllocatedNum<F>>), SynthesisError>;
 }
+
+// NOTES: This seems to just enforce that when we call a circuit at a given
+// step, it matches the set program counter.
 
 /// A helper trait for a step of the incremental computation for `SuperNova`
 /// (i.e., circuit for F) -- automatically implemented for `StepCircuit` and

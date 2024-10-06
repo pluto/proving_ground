@@ -11,6 +11,9 @@ use crate::{
     CommitmentKey,
 };
 
+// NOTES: This function seems heavily reliant on dynamic allocation all to
+// return 0 in the end...
+
 /// Public parameter creation takes a size hint. This size hint carries the
 /// particular requirements of the final compressing SNARK the user expected to
 /// use with these public parameters, and the below is a sensible default, which
@@ -21,6 +24,10 @@ pub fn default_ck_hint<E: Engine>() -> Box<dyn for<'a> Fn(&'a R1CSShape<E>) -> u
     // key
     Box::new(|_shape: &R1CSShape<E>| 0)
 }
+
+// NOTES: I'm not sure having a trait here is really necessary unless you're
+// wanting to have a much larger abstraction. I'd consider just gutting this and
+// forming one SNARK that we use.
 
 /// A trait that defines the behavior of a `zkSNARK`
 pub trait RelaxedR1CSSNARKTrait<E: Engine>:
@@ -72,6 +79,10 @@ pub trait BatchedRelaxedR1CSSNARKTrait<E: Engine>:
     /// A type that represents the verifier's key
     type VerifierKey: Send + Sync + DigestHelperTrait<E>;
 
+    // NOTES: If we don't need something more general here, this is just an odd
+    // thing to have defined generically since it just calls the weird function
+    // above.
+
     /// This associated function (not a method) provides a hint that offers
     /// a minimum sizing cue for the commitment key used by this SNARK
     /// implementation. The commitment key passed in setup should then
@@ -86,8 +97,9 @@ pub trait BatchedRelaxedR1CSSNARKTrait<E: Engine>:
     /// commitment key. Look at `CommitmentEngineTrait::setup` for generating
     /// SRS data.
     fn setup(
-        ck: Arc<CommitmentKey<E>>,
-        S: Vec<&R1CSShape<E>>,
+        ck: Arc<CommitmentKey<E>>, // NOTES: Why `Arc` this?
+        S: Vec<&R1CSShape<E>>,     /* NOTES: Why not a &[R1CSShape] here?, would get the same
+                                    * thing across as an iter i think */
     ) -> Result<(Self::ProverKey, Self::VerifierKey), NovaError>;
 
     /// Produces a new SNARK for a batch of relaxed R1CS

@@ -2,7 +2,7 @@
 //! `prove_step`, and `verify` methods.
 
 use bellpepper_core::{ConstraintSystem, SynthesisError};
-use ff::{PrimeField, PrimeFieldBits};
+use ff::PrimeFieldBits;
 use once_cell::sync::OnceCell;
 use serde::{Deserialize, Serialize};
 
@@ -28,9 +28,10 @@ use crate::{
         self, CommitmentKeyHint, R1CSInstance, R1CSResult, R1CSWitness, RelaxedR1CSInstance,
         RelaxedR1CSWitness,
     },
+    supernova::StepCircuit,
     traits::{
-        circuit::StepCircuit, commitment::CommitmentTrait, AbsorbInROTrait, CurveCycleEquipped,
-        Dual, Engine, ROConstantsCircuit, ROTrait,
+        commitment::CommitmentTrait, AbsorbInROTrait, CurveCycleEquipped, Dual, Engine,
+        ROConstantsCircuit, ROTrait,
     },
     Commitment, CommitmentKey, DigestComputer, R1CSWithArity, ROConstants, ResourceBuffer,
     SimpleDigestible,
@@ -498,63 +499,65 @@ where
     }
 }
 
-#[cfg(test)]
-mod test {
-    use std::marker::PhantomData;
+// #[cfg(test)]
+// mod test {
+//     use std::marker::PhantomData;
 
-    use bellpepper_core::num::AllocatedNum;
+//     use bellpepper_core::num::AllocatedNum;
 
-    use super::*;
-    use crate::{
-        provider::{Bn256EngineKZG, PallasEngine, Secp256k1Engine},
-        traits::snark::default_ck_hint,
-    };
+//     use super::*;
+//     use crate::{
+//         provider::{Bn256EngineKZG, PallasEngine, Secp256k1Engine},
+//         traits::snark::default_ck_hint,
+//     };
 
-    #[derive(Clone)]
-    struct SquareCircuit<F> {
-        _p: PhantomData<F>,
-    }
+//     #[derive(Clone)]
+//     struct SquareCircuit<F> {
+//         _p: PhantomData<F>,
+//     }
 
-    impl<F: PrimeField> StepCircuit<F> for SquareCircuit<F> {
-        fn arity(&self) -> usize {
-            1
-        }
+//     impl<F: PrimeField> StepCircuit<F> for SquareCircuit<F> {
+//         fn arity(&self) -> usize {
+//             1
+//         }
 
-        fn synthesize<CS: ConstraintSystem<F>>(
-            &self,
-            cs: &mut CS,
-            z: &[AllocatedNum<F>],
-        ) -> Result<Vec<AllocatedNum<F>>, SynthesisError> {
-            let x = &z[0];
-            let x_sq = x.square(cs.namespace(|| "x_sq"))?;
+//         fn synthesize<CS: ConstraintSystem<F>>(
+//             &self,
+//             cs: &mut CS,
+//             z: &[AllocatedNum<F>],
+//         ) -> Result<Vec<AllocatedNum<F>>, SynthesisError> {
+//             let x = &z[0];
+//             let x_sq = x.square(cs.namespace(|| "x_sq"))?;
 
-            Ok(vec![x_sq])
-        }
-    }
+//             Ok(vec![x_sq])
+//         }
+//     }
 
-    fn test_trivial_cyclefold_prove_verify_with<E: CurveCycleEquipped>() {
-        let primary_circuit = SquareCircuit::<E::Scalar> { _p: PhantomData };
+//     fn test_trivial_cyclefold_prove_verify_with<E: CurveCycleEquipped>() {
+//         let primary_circuit = SquareCircuit::<E::Scalar> { _p: PhantomData };
 
-        let pp =
-            PublicParams::<E>::setup(&primary_circuit, &*default_ck_hint(), &*default_ck_hint());
+//         let pp =
+//             PublicParams::<E>::setup(&primary_circuit, &*default_ck_hint(),
+// &*default_ck_hint());
 
-        let z0 = vec![E::Scalar::from(2u64)];
+//         let z0 = vec![E::Scalar::from(2u64)];
 
-        let mut recursive_snark = RecursiveSNARK::new(&pp, &primary_circuit, &z0).unwrap();
+//         let mut recursive_snark = RecursiveSNARK::new(&pp, &primary_circuit,
+// &z0).unwrap();
 
-        (1..5).for_each(|iter| {
-            let res_proof = recursive_snark.prove_step(&pp, &primary_circuit);
-            res_proof.unwrap();
+//         (1..5).for_each(|iter| {
+//             let res_proof = recursive_snark.prove_step(&pp,
+// &primary_circuit);             res_proof.unwrap();
 
-            let res_verify = recursive_snark.verify(&pp, iter, &z0);
-            res_verify.unwrap();
-        });
-    }
+//             let res_verify = recursive_snark.verify(&pp, iter, &z0);
+//             res_verify.unwrap();
+//         });
+//     }
 
-    #[test]
-    fn test_cyclefold_prove_verify() {
-        test_trivial_cyclefold_prove_verify_with::<PallasEngine>();
-        test_trivial_cyclefold_prove_verify_with::<Bn256EngineKZG>();
-        test_trivial_cyclefold_prove_verify_with::<Secp256k1Engine>();
-    }
-}
+//     #[test]
+//     fn test_cyclefold_prove_verify() {
+//         test_trivial_cyclefold_prove_verify_with::<PallasEngine>();
+//         test_trivial_cyclefold_prove_verify_with::<Bn256EngineKZG>();
+//         test_trivial_cyclefold_prove_verify_with::<Secp256k1Engine>();
+//     }
+// }

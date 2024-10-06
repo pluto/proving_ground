@@ -1,5 +1,4 @@
 //! batched pp snark
-//!
 
 use core::slice;
 use std::sync::Arc;

@@ -363,7 +363,7 @@ impl<G: Group> AllocatedPoint<G> {
         //*************************************************************/
         // lambda = (G::Base::from(3) * self.x * self.x + G::GG::A())
         //  * (G::Base::from(2)) * self.y).invert().unwrap();
-        /// **********************************************************
+        // **********************************************************
 
         // Compute tmp = (G::Base::ONE + G::Base::ONE)* self.y ? self != inf : 1
         let tmp_actual = AllocatedNum::alloc(cs.namespace(|| "tmp_actual"), || {
@@ -410,10 +410,9 @@ impl<G: Group> AllocatedPoint<G> {
             |lc| lc + prod_1.get_variable() + (G::group_params().0, CS::one()),
         );
 
-        /// **********************************************************
+        // **********************************************************
         //          x = lambda * lambda - self.x - self.x;
-        /// **********************************************************
-
+        // **********************************************************
         let x = AllocatedNum::alloc(cs.namespace(|| "x"), || {
             Ok(
                 ((*lambda.get_value().get()?) * (*lambda.get_value().get()?))
@@ -428,10 +427,9 @@ impl<G: Group> AllocatedPoint<G> {
             |lc| lc + x.get_variable() + self.x.get_variable() + self.x.get_variable(),
         );
 
-        /// **********************************************************
+        // **********************************************************
         //        y = lambda * (self.x - x) - self.y;
-        /// **********************************************************
-
+        // **********************************************************
         let y =
             AllocatedNum::alloc(cs.namespace(|| "y"), || {
                 Ok((*lambda.get_value().get()?)
@@ -445,10 +443,9 @@ impl<G: Group> AllocatedPoint<G> {
             |lc| lc + y.get_variable() + self.y.get_variable(),
         );
 
-        /// **********************************************************
+        // **********************************************************
         // Only return the computed x and y if the point is not infinity
-        /// **********************************************************
-
+        // **********************************************************
         // x
         let x = select_zero_or_num2(cs.namespace(|| "final x"), &x, &self.is_infinity)?;
 

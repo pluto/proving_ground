@@ -5,6 +5,9 @@ use thiserror::Error;
 
 use crate::errors::NovaError;
 
+// TODO: These are in a dumb spot imo, they should be defined at the crate root
+// and cover everything. Also, we should use `transparent`
+
 /// Errors returned by Nova
 #[derive(Debug, Eq, PartialEq, Error)]
 pub enum SuperNovaError {

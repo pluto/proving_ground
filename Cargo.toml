@@ -82,7 +82,7 @@ vergen = { version = "8", features = ["build", "git", "gitcl"] }
 [features]
 default = []
 abomonate = []
-asm = ["halo2curves/asm"]
+# asm = ["halo2curves/asm"]
 # Compiles in portable mode, w/o ISA extensions => binary can be executed on all systems.
 portable = ["grumpkin-msm/portable"]
 cuda = ["grumpkin-msm/cuda"]

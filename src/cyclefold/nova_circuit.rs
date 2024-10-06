@@ -17,10 +17,8 @@ use crate::{
         alloc_num_equals, alloc_scalar_as_base, alloc_zero, le_bits_to_num,
         AllocatedRelaxedR1CSInstance,
     },
-    traits::{
-        circuit::StepCircuit, commitment::CommitmentTrait, Engine, ROCircuitTrait,
-        ROConstantsCircuit,
-    },
+    supernova::StepCircuit,
+    traits::{commitment::CommitmentTrait, Engine, ROCircuitTrait, ROConstantsCircuit},
     Commitment,
 };
 
@@ -405,9 +403,10 @@ where
         let zero = alloc_zero(cs.namespace(|| "zero"));
         let is_base_case = alloc_num_equals(cs.namespace(|| "is base case"), &i, &zero)?;
 
-        let (Unew_c_base, Unew_p_base) = self.synthesize_base_case(cs.namespace(|| "base case"))?;
+        let (U_new_c_base, U_new_p_base) =
+            self.synthesize_base_case(cs.namespace(|| "base case"))?;
 
-        let (Unew_c_non_base, Unew_p_non_base, check_non_base_pass) = self
+        let (U_new_c_non_base, U_new_p_non_base, check_non_base_pass) = self
             .synthesize_non_base_case(
                 cs.namespace(|| "synthesize non base case"),
                 &pp_digest,
@@ -435,16 +434,16 @@ where
         );
 
         // select the new running primary instance
-        let Unew_p = Unew_p_base.conditionally_select(
+        let Unew_p = U_new_p_base.conditionally_select(
             cs.namespace(|| "compute Unew_p"),
-            &Unew_p_non_base,
+            &U_new_p_non_base,
             &Boolean::from(is_base_case.clone()),
         )?;
 
         // select the new running CycleFold instance
-        let Unew_c = Unew_c_base.conditionally_select(
+        let Unew_c = U_new_c_base.conditionally_select(
             cs.namespace(|| "compute Unew_c"),
-            &Unew_c_non_base,
+            &U_new_c_non_base,
             &Boolean::from(is_base_case.clone()),
         )?;
 
@@ -467,9 +466,9 @@ where
             &Boolean::from(is_base_case),
         )?;
 
-        let z_next = self
-            .step_circuit
-            .synthesize(&mut cs.namespace(|| "F"), &z_input)?;
+        let (_pc, z_next) =
+            self.step_circuit
+                .synthesize(&mut cs.namespace(|| "F"), None, &z_input)?;
 
         if z_next.len() != arity {
             return Err(SynthesisError::IncompatibleLengthVector(

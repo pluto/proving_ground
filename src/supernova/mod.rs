@@ -2,14 +2,8 @@
 
 use std::{ops::Index, sync::Arc};
 
-#[cfg(feature = "abomonate")]
-use abomonation::Abomonation;
-#[cfg(feature = "abomonate")]
-use abomonation_derive::Abomonation;
 use bellpepper_core::{ConstraintSystem, SynthesisError};
 use ff::Field;
-#[cfg(feature = "abomonate")]
-use ff::PrimeField;
 use itertools::Itertools as _;
 use once_cell::sync::OnceCell;
 use rayon::prelude::*;
@@ -128,13 +122,7 @@ where
 /// A variant of [`crate::supernova::AuxParams`] that is suitable for fast
 /// ser/de using Abomonation
 #[cfg(feature = "abomonate")]
-#[derive(Debug, Clone, PartialEq, Abomonation)]
-#[abomonation_bounds(
-where
-  E1: CurveCycleEquipped,
-  <E1::Scalar as PrimeField>::Repr: Abomonation,
-  <<Dual<E1> as Engine>::Scalar as PrimeField>::Repr: Abomonation,
-)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct FlatAuxParams<E1>
 where
     E1: CurveCycleEquipped,
@@ -149,8 +137,6 @@ where
     ck_secondary: CommitmentKey<Dual<E1>>,
     circuit_shape_secondary: R1CSWithArity<Dual<E1>>,
     augmented_circuit_params_secondary: SuperNovaAugmentedCircuitParams,
-
-    #[abomonate_with(<E1::Scalar as PrimeField>::Repr)]
     digest: E1::Scalar,
 }
 

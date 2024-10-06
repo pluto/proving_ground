@@ -4,7 +4,7 @@ pub(crate) mod util;
 
 use core::cmp::max;
 
-use ff::{Field, PrimeField};
+use ff::Field;
 use once_cell::sync::OnceCell;
 use rand_core::{CryptoRng, RngCore};
 use rayon::prelude::*;

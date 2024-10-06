@@ -284,7 +284,6 @@ fn field_as_usize<F: PrimeField>(x: F) -> usize {
 mod test {
     use std::marker::PhantomData;
 
-    use abomonation::Abomonation;
     use bellpepper_core::{num::AllocatedNum, ConstraintSystem, SynthesisError};
     use ff::{Field, PrimeField};
 
@@ -589,8 +588,6 @@ mod test {
         E1: CurveCycleEquipped,
         S1: BatchedRelaxedR1CSSNARKTrait<E1>,
         S2: RelaxedR1CSSNARKTrait<Dual<E1>>,
-        <E1::Scalar as PrimeField>::Repr: Abomonation,
-        <<Dual<E1> as Engine>::Scalar as PrimeField>::Repr: Abomonation,
         C: NonUniformCircuit<
                 E1,
                 C1 = C,
