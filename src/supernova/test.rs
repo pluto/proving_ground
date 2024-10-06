@@ -14,7 +14,7 @@ use crate::{
         poseidon::PoseidonConstantsCircuit, Bn256EngineIPA, PallasEngine, Secp256k1Engine,
         VestaEngine,
     },
-    supernova::circuit::{StepCircuit, TrivialCircuit, TrivialSecondaryCircuit},
+    supernova::circuit::{StepCircuit, TrivialCircuit},
     traits::snark::default_ck_hint,
 };
 
@@ -320,7 +320,7 @@ where
     E1: CurveCycleEquipped,
 {
     type C1 = TestROMCircuit<E1::Scalar>;
-    type C2 = TrivialSecondaryCircuit<<Dual<E1> as Engine>::Scalar>;
+    type C2 = TrivialCircuit<<Dual<E1> as Engine>::Scalar>;
 
     fn num_circuits(&self) -> usize {
         2
@@ -483,9 +483,9 @@ fn test_recursive_circuit_with<E1>(
     num_constraints_primary.assert_eq(&cs.num_constraints().to_string());
 
     // Initialize the shape and ck for the secondary
-    let step_circuit2 = TrivialSecondaryCircuit::default();
+    let step_circuit2 = TrivialCircuit::default();
     let arity2 = step_circuit2.arity();
-    let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialSecondaryCircuit<<E1 as Engine>::Base>> =
+    let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialCircuit<<E1 as Engine>::Base>> =
         SuperNovaAugmentedCircuit::new(
             secondary_params,
             None,
@@ -544,8 +544,8 @@ fn test_recursive_circuit_with<E1>(
         None,
         zero2,
     );
-    let step_circuit = TrivialSecondaryCircuit::default();
-    let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialSecondaryCircuit<<E1 as Engine>::Base>> =
+    let step_circuit = TrivialCircuit::default();
+    let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialCircuit<<E1 as Engine>::Base>> =
         SuperNovaAugmentedCircuit::new(
             secondary_params,
             Some(inputs2),
@@ -814,7 +814,7 @@ where
     E1: CurveCycleEquipped,
 {
     type C1 = Self;
-    type C2 = TrivialSecondaryCircuit<<Dual<E1> as Engine>::Scalar>;
+    type C2 = TrivialCircuit<<Dual<E1> as Engine>::Scalar>;
 
     fn num_circuits(&self) -> usize {
         2
@@ -829,7 +829,7 @@ where
     }
 
     fn secondary_circuit(&self) -> Self::C2 {
-        TrivialSecondaryCircuit::<E1::Base>::default()
+        TrivialCircuit::<E1::Base>::default()
     }
 }
 
@@ -837,7 +837,7 @@ fn test_nivc_nondet_with<E1>()
 where
     E1: CurveCycleEquipped,
 {
-    let circuit_secondary = TrivialSecondaryCircuit::default();
+    let circuit_secondary = TrivialCircuit::default();
 
     let num_steps = 3;
 

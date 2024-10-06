@@ -285,13 +285,13 @@ mod test {
     use std::marker::PhantomData;
 
     use bellpepper_core::{num::AllocatedNum, ConstraintSystem, SynthesisError};
-    use ff::{Field, PrimeField};
+    use ff::Field;
 
     use super::*;
     use crate::{
         provider::{ipa_pc, Bn256EngineIPA, PallasEngine, Secp256k1Engine},
         spartan::{batched, batched_ppsnark, snark::RelaxedR1CSSNARK},
-        supernova::{circuit::TrivialSecondaryCircuit, NonUniformCircuit, StepCircuit},
+        supernova::{circuit::TrivialCircuit, NonUniformCircuit, StepCircuit},
     };
 
     type EE<E> = ipa_pc::EvaluationEngine<E>;
@@ -443,7 +443,7 @@ mod test {
 
     impl<E1: CurveCycleEquipped> NonUniformCircuit<E1> for TestCircuit<E1> {
         type C1 = Self;
-        type C2 = TrivialSecondaryCircuit<<Dual<E1> as Engine>::Scalar>;
+        type C2 = TrivialCircuit<<Dual<E1> as Engine>::Scalar>;
 
         fn num_circuits(&self) -> usize {
             2
@@ -564,7 +564,7 @@ mod test {
 
     impl<E1: CurveCycleEquipped> NonUniformCircuit<E1> for BigTestCircuit<E1> {
         type C1 = Self;
-        type C2 = TrivialSecondaryCircuit<<Dual<E1> as Engine>::Scalar>;
+        type C2 = TrivialCircuit<<Dual<E1> as Engine>::Scalar>;
 
         fn num_circuits(&self) -> usize {
             2
@@ -588,14 +588,11 @@ mod test {
         E1: CurveCycleEquipped,
         S1: BatchedRelaxedR1CSSNARKTrait<E1>,
         S2: RelaxedR1CSSNARKTrait<Dual<E1>>,
-        C: NonUniformCircuit<
-                E1,
-                C1 = C,
-                C2 = TrivialSecondaryCircuit<<Dual<E1> as Engine>::Scalar>,
-            > + StepCircuit<E1::Scalar>,
+        C: NonUniformCircuit<E1, C1 = C, C2 = TrivialCircuit<<Dual<E1> as Engine>::Scalar>>
+            + StepCircuit<E1::Scalar>,
         F: Fn(usize) -> Vec<C>,
     {
-        let secondary_circuit = TrivialSecondaryCircuit::default();
+        let secondary_circuit = TrivialCircuit::default();
         let test_circuits = circuits_factory(num_steps);
 
         let pp = PublicParams::setup(&test_circuits[0], &*S1::ck_floor(), &*S2::ck_floor());
