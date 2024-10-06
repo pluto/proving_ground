@@ -111,12 +111,13 @@ pub trait EnforcingStepCircuit<F: PrimeField>: Send + Sync + Clone + StepCircuit
 impl<F: PrimeField, S: StepCircuit<F>> EnforcingStepCircuit<F> for S {}
 
 /// A trivial step circuit that simply returns the input
+/// NOTE: Should only be used as secondary circuit!!!
 #[derive(Clone, Debug, Default)]
-pub struct TrivialTestCircuit<F> {
+pub struct TrivialCircuit<F> {
     _p: PhantomData<F>,
 }
 
-impl<F> StepCircuit<F> for TrivialTestCircuit<F>
+impl<F> StepCircuit<F> for TrivialCircuit<F>
 where
     F: PrimeField,
 {
@@ -124,6 +125,7 @@ where
         1
     }
 
+    /// This will not interfere with other circuit indices in the primary circuit.
     fn circuit_index(&self) -> usize {
         0
     }
@@ -135,40 +137,6 @@ where
         z: &[AllocatedNum<F>],
     ) -> Result<(Option<AllocatedNum<F>>, Vec<AllocatedNum<F>>), SynthesisError> {
         Ok((program_counter.cloned(), z.to_vec()))
-    }
-}
-
-/// A trivial step circuit that simply returns the input, for use on the
-/// secondary circuit when implementing NIVC. NOTE: This should not be needed.
-/// The secondary circuit doesn't need the program counter at all. Ideally, the
-/// need this fills could be met by `traits::circuit::TrivialTestCircuit` (or
-/// equivalent).
-#[derive(Clone, Debug, Default)]
-pub struct TrivialSecondaryCircuit<F> {
-    _p: PhantomData<F>,
-}
-
-impl<F> StepCircuit<F> for TrivialSecondaryCircuit<F>
-where
-    F: PrimeField,
-{
-    fn arity(&self) -> usize {
-        1
-    }
-
-    fn circuit_index(&self) -> usize {
-        0
-    }
-
-    fn synthesize<CS: ConstraintSystem<F>>(
-        &self,
-        _cs: &mut CS,
-        program_counter: Option<&AllocatedNum<F>>,
-        z: &[AllocatedNum<F>],
-    ) -> Result<(Option<AllocatedNum<F>>, Vec<AllocatedNum<F>>), SynthesisError> {
-        assert!(program_counter.is_none());
-        assert_eq!(z.len(), 1, "Arity of trivial step circuit should be 1");
-        Ok((None, z.to_vec()))
     }
 }
 
@@ -738,7 +706,7 @@ mod tests {
             poseidon::PoseidonConstantsCircuit, Bn256EngineIPA, GrumpkinEngine, PallasEngine,
             Secp256k1Engine, Secq256k1Engine, VestaEngine,
         },
-        supernova::circuit::TrivialTestCircuit,
+        supernova::circuit::TrivialCircuit,
         traits::{snark::default_ck_hint, CurveCycleEquipped, Dual},
     };
 
@@ -755,12 +723,12 @@ mod tests {
     ) where
         E1: CurveCycleEquipped,
     {
-        let tc1 = TrivialTestCircuit::default();
+        let tc1 = TrivialCircuit::default();
         // Initialize the shape and ck for the primary
         let circuit1: SuperNovaAugmentedCircuit<
             '_,
             Dual<E1>,
-            TrivialTestCircuit<<Dual<E1> as Engine>::Base>,
+            TrivialCircuit<<Dual<E1> as Engine>::Base>,
         > = SuperNovaAugmentedCircuit::new(
             primary_params,
             None,
@@ -774,9 +742,9 @@ mod tests {
 
         num_constraints_primary.assert_eq(&cs.num_constraints().to_string());
 
-        let tc2 = TrivialTestCircuit::default();
+        let tc2 = TrivialCircuit::default();
         // Initialize the shape and ck for the secondary
-        let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialTestCircuit<<E1 as Engine>::Base>> =
+        let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialCircuit<<E1 as Engine>::Base>> =
             SuperNovaAugmentedCircuit::new(
                 secondary_params,
                 None,
@@ -809,7 +777,7 @@ mod tests {
         let circuit1: SuperNovaAugmentedCircuit<
             '_,
             Dual<E1>,
-            TrivialTestCircuit<<Dual<E1> as Engine>::Base>,
+            TrivialCircuit<<Dual<E1> as Engine>::Base>,
         > = SuperNovaAugmentedCircuit::new(
             primary_params,
             Some(inputs1),
@@ -837,7 +805,7 @@ mod tests {
             Some(zero2),
             zero2,
         );
-        let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialTestCircuit<<E1 as Engine>::Base>> =
+        let circuit2: SuperNovaAugmentedCircuit<'_, E1, TrivialCircuit<<E1 as Engine>::Base>> =
             SuperNovaAugmentedCircuit::new(
                 secondary_params,
                 Some(inputs2),

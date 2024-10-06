@@ -80,13 +80,11 @@ serde_json = "1.0.1"
 vergen = { version = "8", features = ["build", "git", "gitcl"] }
 
 [features]
-default = []
-abomonate = []
+default = ["grumpkin-msm/portable"]
 # asm = ["halo2curves/asm"]
 # Compiles in portable mode, w/o ISA extensions => binary can be executed on all systems.
-portable = ["grumpkin-msm/portable"]
-cuda = ["grumpkin-msm/cuda"]
-flamegraph = ["pprof/flamegraph", "pprof/criterion"]
+# portable = ["grumpkin-msm/portable"]
+# cuda = ["grumpkin-msm/cuda"]
 
 [profile.dev-ci]
 inherits = "dev"

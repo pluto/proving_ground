@@ -14,7 +14,7 @@ use crate::{
         poseidon::PoseidonConstantsCircuit, Bn256EngineIPA, PallasEngine, Secp256k1Engine,
         VestaEngine,
     },
-    supernova::circuit::{StepCircuit, TrivialSecondaryCircuit, TrivialTestCircuit},
+    supernova::circuit::{StepCircuit, TrivialCircuit, TrivialSecondaryCircuit},
     traits::snark::default_ck_hint,
 };
 
@@ -468,12 +468,12 @@ fn test_recursive_circuit_with<E1>(
     E1: CurveCycleEquipped,
 {
     // Initialize the shape and ck for the primary
-    let step_circuit1 = TrivialTestCircuit::default();
+    let step_circuit1 = TrivialCircuit::default();
     let arity1 = step_circuit1.arity();
     let circuit1: SuperNovaAugmentedCircuit<
         '_,
         Dual<E1>,
-        TrivialTestCircuit<<Dual<E1> as Engine>::Base>,
+        TrivialCircuit<<Dual<E1> as Engine>::Base>,
     > = SuperNovaAugmentedCircuit::new(primary_params, None, &step_circuit1, ro_consts1.clone(), 2);
     let mut cs: ShapeCS<E1> = ShapeCS::new();
     if let Err(e) = circuit1.synthesize(&mut cs) {
@@ -516,11 +516,11 @@ fn test_recursive_circuit_with<E1>(
             Some(zero1),
             zero1,
         );
-    let step_circuit = TrivialTestCircuit::default();
+    let step_circuit = TrivialCircuit::default();
     let circuit1: SuperNovaAugmentedCircuit<
         '_,
         Dual<E1>,
-        TrivialTestCircuit<<Dual<E1> as Engine>::Base>,
+        TrivialCircuit<<Dual<E1> as Engine>::Base>,
     > = SuperNovaAugmentedCircuit::new(primary_params, Some(inputs1), &step_circuit, ro_consts1, 2);
     if let Err(e) = circuit1.synthesize(&mut cs1) {
         panic!("{}", e)

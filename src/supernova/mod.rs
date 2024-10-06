@@ -34,7 +34,7 @@ use crate::{
 };
 
 mod circuit; // declare the module first
-pub use circuit::{StepCircuit, TrivialSecondaryCircuit, TrivialTestCircuit};
+pub use circuit::{StepCircuit, TrivialCircuit};
 use circuit::{
     SuperNovaAugmentedCircuit, SuperNovaAugmentedCircuitInputs, SuperNovaAugmentedCircuitParams,
 };
@@ -117,75 +117,6 @@ where
     augmented_circuit_params_secondary: SuperNovaAugmentedCircuitParams,
 
     digest: E1::Scalar,
-}
-
-/// A variant of [`crate::supernova::AuxParams`] that is suitable for fast
-/// ser/de using Abomonation
-#[cfg(feature = "abomonate")]
-#[derive(Debug, Clone, PartialEq)]
-pub struct FlatAuxParams<E1>
-where
-    E1: CurveCycleEquipped,
-{
-    ro_consts_primary: ROConstants<E1>,
-    ro_consts_circuit_primary: ROConstantsCircuit<Dual<E1>>,
-    ck_primary: CommitmentKey<E1>, // This is shared between all circuit params
-    augmented_circuit_params_primary: SuperNovaAugmentedCircuitParams,
-
-    ro_consts_secondary: ROConstants<Dual<E1>>,
-    ro_consts_circuit_secondary: ROConstantsCircuit<E1>,
-    ck_secondary: CommitmentKey<Dual<E1>>,
-    circuit_shape_secondary: R1CSWithArity<Dual<E1>>,
-    augmented_circuit_params_secondary: SuperNovaAugmentedCircuitParams,
-    digest: E1::Scalar,
-}
-
-#[cfg(feature = "abomonate")]
-impl<E1> TryFrom<AuxParams<E1>> for FlatAuxParams<E1>
-where
-    E1: CurveCycleEquipped,
-{
-    type Error = &'static str;
-
-    fn try_from(value: AuxParams<E1>) -> Result<Self, Self::Error> {
-        let ck_primary =
-            Arc::try_unwrap(value.ck_primary).map_err(|_| "Failed to unwrap Arc for ck_primary")?;
-        let ck_secondary = Arc::try_unwrap(value.ck_secondary)
-            .map_err(|_| "Failed to unwrap Arc for ck_secondary")?;
-        Ok(Self {
-            ro_consts_primary: value.ro_consts_primary,
-            ro_consts_circuit_primary: value.ro_consts_circuit_primary,
-            ck_primary,
-            augmented_circuit_params_primary: value.augmented_circuit_params_primary,
-            ro_consts_secondary: value.ro_consts_secondary,
-            ro_consts_circuit_secondary: value.ro_consts_circuit_secondary,
-            ck_secondary,
-            circuit_shape_secondary: value.circuit_shape_secondary,
-            augmented_circuit_params_secondary: value.augmented_circuit_params_secondary,
-            digest: value.digest,
-        })
-    }
-}
-
-#[cfg(feature = "abomonate")]
-impl<E1> From<FlatAuxParams<E1>> for AuxParams<E1>
-where
-    E1: CurveCycleEquipped,
-{
-    fn from(value: FlatAuxParams<E1>) -> Self {
-        Self {
-            ro_consts_primary: value.ro_consts_primary,
-            ro_consts_circuit_primary: value.ro_consts_circuit_primary,
-            ck_primary: Arc::new(value.ck_primary),
-            augmented_circuit_params_primary: value.augmented_circuit_params_primary,
-            ro_consts_secondary: value.ro_consts_secondary,
-            ro_consts_circuit_secondary: value.ro_consts_circuit_secondary,
-            ck_secondary: Arc::new(value.ck_secondary),
-            circuit_shape_secondary: value.circuit_shape_secondary,
-            augmented_circuit_params_secondary: value.augmented_circuit_params_secondary,
-            digest: value.digest,
-        }
-    }
 }
 
 impl<E1> Index<usize> for PublicParams<E1>
