@@ -206,7 +206,7 @@ mod tests {
             solver::SatisfyingAssignment,
             test_shape_cs::TestShapeCS,
         },
-        provider::{Bn256EngineKZG, PallasEngine, Secp256k1Engine},
+        provider::Bn256EngineKZG,
         r1cs::commitment_key,
         traits::{snark::default_ck_hint, Engine},
     };
@@ -286,9 +286,7 @@ mod tests {
 
     #[test]
     fn test_tiny_r1cs_bellpepper() {
-        test_tiny_r1cs_bellpepper_with::<PallasEngine>();
         test_tiny_r1cs_bellpepper_with::<Bn256EngineKZG>();
-        test_tiny_r1cs_bellpepper_with::<Secp256k1Engine>();
     }
 
     fn execute_sequence<E: Engine>(
@@ -411,8 +409,6 @@ mod tests {
 
     #[test]
     fn test_tiny_r1cs() {
-        test_tiny_r1cs_with::<PallasEngine>();
         test_tiny_r1cs_with::<Bn256EngineKZG>();
-        test_tiny_r1cs_with::<Secp256k1Engine>();
     }
 }

@@ -9,7 +9,6 @@ use std::{
 };
 
 use ff::PrimeField;
-use rand::{CryptoRng, RngCore};
 use rayon::prelude::{IntoParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use ref_cast::RefCast;
 use serde::{Deserialize, Serialize};
@@ -180,8 +179,9 @@ impl<Scalar: PrimeField> UniPoly<Scalar> {
         }
     }
 
+    #[cfg(test)]
     /// Returns a random polynomial
-    pub fn random<R: RngCore + CryptoRng>(num_vars: usize, mut rng: &mut R) -> Self {
+    pub fn random<R: rand::RngCore + rand::CryptoRng>(num_vars: usize, mut rng: &mut R) -> Self {
         Self::new(
             std::iter::from_fn(|| Some(Scalar::random(&mut rng)))
                 .take(num_vars)
@@ -291,7 +291,7 @@ mod tests {
     use rand_chacha::ChaCha20Rng;
 
     use super::*;
-    use crate::provider::{bn256_grumpkin, secp_secq::secp256k1};
+    use crate::provider::bn256_grumpkin;
 
     fn test_from_evals_quad_with<F: PrimeField>() {
         // polynomial is 2x^2 + 3x + 1
@@ -321,9 +321,7 @@ mod tests {
 
     #[test]
     fn test_from_evals_quad() {
-        test_from_evals_quad_with::<pasta_curves::pallas::Scalar>();
         test_from_evals_quad_with::<bn256_grumpkin::bn256::Scalar>();
-        test_from_evals_quad_with::<secp256k1::Scalar>();
     }
 
     fn test_from_evals_cubic_with<F: PrimeField>() {
@@ -356,9 +354,7 @@ mod tests {
 
     #[test]
     fn test_from_evals_cubic() {
-        test_from_evals_cubic_with::<pasta_curves::pallas::Scalar>();
         test_from_evals_cubic_with::<bn256_grumpkin::bn256::Scalar>();
-        test_from_evals_cubic_with::<secp256k1::Scalar>()
     }
 
     /// Perform a naive n^2 multiplication of `self` by `other`.
@@ -409,15 +405,11 @@ mod tests {
             assert_eq!(q1, q2);
         }
 
-        test_inner::<pasta_curves::pallas::Scalar>();
         test_inner::<bn256_grumpkin::bn256::Scalar>();
-        test_inner::<secp256k1::Scalar>();
     }
 
     #[test]
     fn test_divide_polynomials_random() {
-        divide_polynomials_random::<pasta_curves::pallas::Scalar>();
         divide_polynomials_random::<bn256_grumpkin::bn256::Scalar>();
-        divide_polynomials_random::<secp256k1::Scalar>()
     }
 }

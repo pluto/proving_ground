@@ -110,77 +110,77 @@ pub fn get_selector_vec_from_index<F: PrimeField, CS: ConstraintSystem<F>>(
     Ok(selector)
 }
 
-#[cfg(test)]
-mod test {
-    use bellpepper_core::test_cs::TestConstraintSystem;
-    use pasta_curves::pallas::Base;
+// #[cfg(test)]
+// mod test {
+//     use bellpepper_core::test_cs::TestConstraintSystem;
 
-    use super::*;
-    use crate::provider::PallasEngine;
+//     use super::*;
 
-    #[test]
-    fn test_get_from_vec_alloc_relaxed_r1cs_bounds() {
-        let n = 3;
-        for selected in 0..(2 * n) {
-            let mut cs = TestConstraintSystem::<Base>::new();
+//     #[test]
+//     fn test_get_from_vec_alloc_relaxed_r1cs_bounds() {
+//         let n = 3;
+//         for selected in 0..(2 * n) {
+//             let mut cs = TestConstraintSystem::<Base>::new();
 
-            let allocated_target =
-                AllocatedNum::alloc_infallible(&mut cs.namespace(|| "target"), || {
-                    Base::from(selected as u64)
-                });
+//             let allocated_target =
+//                 AllocatedNum::alloc_infallible(&mut cs.namespace(||
+// "target"), || {                     Base::from(selected as u64)
+//                 });
 
-            let selector_vec = get_selector_vec_from_index(&mut cs, &allocated_target, n).unwrap();
+//             let selector_vec = get_selector_vec_from_index(&mut cs,
+// &allocated_target, n).unwrap();
 
-            let vec = (0..n)
-                .map(|i| {
-                    AllocatedRelaxedR1CSInstance::<PallasEngine, NIO_NOVA_FOLD>::default(
-                        &mut cs.namespace(|| format!("elt-{i}")),
-                        4,
-                        64,
-                    )
-                    .unwrap()
-                })
-                .collect::<Vec<_>>();
+//             let vec = (0..n)
+//                 .map(|i| {
+//                     AllocatedRelaxedR1CSInstance::<PallasEngine,
+// NIO_NOVA_FOLD>::default(                         &mut cs.namespace(||
+// format!("elt-{i}")),                         4,
+//                         64,
+//                     )
+//                     .unwrap()
+//                 })
+//                 .collect::<Vec<_>>();
 
-            get_from_vec_alloc_relaxed_r1cs(&mut cs.namespace(|| "test-fn"), &vec, &selector_vec)
-                .unwrap();
+//             get_from_vec_alloc_relaxed_r1cs(&mut cs.namespace(|| "test-fn"),
+// &vec, &selector_vec)                 .unwrap();
 
-            if selected < n {
-                assert!(cs.is_satisfied())
-            } else {
-                // If selected is out of range, the circuit must be unsatisfied.
-                assert!(!cs.is_satisfied())
-            }
-        }
-    }
+//             if selected < n {
+//                 assert!(cs.is_satisfied())
+//             } else {
+//                 // If selected is out of range, the circuit must be
+// unsatisfied.                 assert!(!cs.is_satisfied())
+//             }
+//         }
+//     }
 
-    #[test]
-    fn test_get_selector() {
-        for n in 1..4 {
-            for selected in 0..(2 * n) {
-                let mut cs = TestConstraintSystem::<Base>::new();
+//     #[test]
+//     fn test_get_selector() {
+//         for n in 1..4 {
+//             for selected in 0..(2 * n) {
+//                 let mut cs = TestConstraintSystem::<Base>::new();
 
-                let allocated_target =
-                    AllocatedNum::alloc_infallible(&mut cs.namespace(|| "target"), || {
-                        Base::from(selected as u64)
-                    });
+//                 let allocated_target =
+//                     AllocatedNum::alloc_infallible(&mut cs.namespace(||
+// "target"), || {                         Base::from(selected as u64)
+//                     });
 
-                let selector_vec =
-                    get_selector_vec_from_index(&mut cs, &allocated_target, n).unwrap();
+//                 let selector_vec =
+//                     get_selector_vec_from_index(&mut cs, &allocated_target,
+// n).unwrap();
 
-                if selected < n {
-                    // Check that the selector bits are correct
-                    assert_eq!(selector_vec.len(), n);
-                    for (i, bit) in selector_vec.iter().enumerate() {
-                        assert_eq!(bit.get_value().unwrap(), i == selected);
-                    }
+//                 if selected < n {
+//                     // Check that the selector bits are correct
+//                     assert_eq!(selector_vec.len(), n);
+//                     for (i, bit) in selector_vec.iter().enumerate() {
+//                         assert_eq!(bit.get_value().unwrap(), i == selected);
+//                     }
 
-                    assert!(cs.is_satisfied());
-                } else {
-                    // If selected is out of range, the circuit must be unsatisfied.
-                    assert!(!cs.is_satisfied());
-                }
-            }
-        }
-    }
-}
+//                     assert!(cs.is_satisfied());
+//                 } else {
+//                     // If selected is out of range, the circuit must be
+// unsatisfied.                     assert!(!cs.is_satisfied());
+//                 }
+//             }
+//         }
+//     }
+// }

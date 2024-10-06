@@ -525,8 +525,8 @@ where
 //         traits::{circuit::TrivialCircuit, CurveCycleEquipped, Dual},
 //     };
 
-//     fn test_augmented_circuit_size_with<E>(expected_cons: &Expect, expected_var: &Expect)
-//     where
+//     fn test_augmented_circuit_size_with<E>(expected_cons: &Expect,
+// expected_var: &Expect)     where
 //         E: CurveCycleEquipped,
 //     {
 //         let params = AugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS);
@@ -535,8 +535,8 @@ where
 
 //         let step_circuit = TrivialCircuit::<E::Base>::default();
 
-//         let circuit = AugmentedCircuit::<E, Dual<E>, TrivialCircuit<E::Base>>::new(
-//             &params,
+//         let circuit = AugmentedCircuit::<E, Dual<E>,
+// TrivialCircuit<E::Base>>::new(             &params,
 //             ro_consts,
 //             None,
 //             &step_circuit,
@@ -556,8 +556,10 @@ where
 
 //     #[test]
 //     fn test_augmented_circuit_size() {
-//         test_augmented_circuit_size_with::<PallasEngine>(&expect!["33289"], &expect!["33323"]);
-//         test_augmented_circuit_size_with::<Secp256k1Engine>(&expect!["35125"], &expect!["35159"]);
-//         test_augmented_circuit_size_with::<Bn256EngineKZG>(&expect!["33856"], &expect!["33890"]);
-//     }
+//         test_augmented_circuit_size_with::<PallasEngine>(&expect!["33289"],
+// &expect!["33323"]);
+//         test_augmented_circuit_size_with::<Secp256k1Engine>(&expect!["35125"
+// ], &expect!["35159"]);
+//         test_augmented_circuit_size_with::<Bn256EngineKZG>(&expect!["33856"],
+// &expect!["33890"]);     }
 // }

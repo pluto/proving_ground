@@ -125,7 +125,8 @@ where
         1
     }
 
-    /// This will not interfere with other circuit indices in the primary circuit.
+    /// This will not interfere with other circuit indices in the primary
+    /// circuit.
     fn circuit_index(&self) -> usize {
         0
     }
@@ -702,10 +703,7 @@ mod tests {
         },
         constants::{BN_LIMB_WIDTH, BN_N_LIMBS},
         gadgets::scalar_as_base,
-        provider::{
-            poseidon::PoseidonConstantsCircuit, Bn256EngineIPA, GrumpkinEngine, PallasEngine,
-            Secp256k1Engine, Secq256k1Engine, VestaEngine,
-        },
+        provider::{poseidon::PoseidonConstantsCircuit, Bn256EngineIPA, GrumpkinEngine},
         supernova::circuit::TrivialCircuit,
         traits::{snark::default_ck_hint, CurveCycleEquipped, Dual},
     };
@@ -820,27 +818,6 @@ mod tests {
     }
 
     #[test]
-    fn test_supernova_recursive_circuit_pasta() {
-        // this test checks against values that must be replicated in benchmarks if
-        // changed here
-        let params1 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, true);
-        let params2 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, false);
-        let ro_consts1: ROConstantsCircuit<VestaEngine> = PoseidonConstantsCircuit::default();
-        let ro_consts2: ROConstantsCircuit<PallasEngine> = PoseidonConstantsCircuit::default();
-
-        test_supernova_recursive_circuit_with::<PallasEngine>(
-            &params1,
-            &params2,
-            ro_consts1,
-            ro_consts2,
-            &expect!["9836"],
-            &expect!["10384"],
-            1,
-        );
-        // TODO: extend to num_augmented_circuits >= 2
-    }
-
-    #[test]
     fn test_supernova_recursive_circuit_grumpkin() {
         let params1 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, true);
         let params2 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, false);
@@ -854,25 +831,6 @@ mod tests {
             ro_consts2,
             &expect!["10004"],
             &expect!["10573"],
-            1,
-        );
-        // TODO: extend to num_augmented_circuits >= 2
-    }
-
-    #[test]
-    fn test_supernova_recursive_circuit_secp() {
-        let params1 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, true);
-        let params2 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, false);
-        let ro_consts1: ROConstantsCircuit<Secq256k1Engine> = PoseidonConstantsCircuit::default();
-        let ro_consts2: ROConstantsCircuit<Secp256k1Engine> = PoseidonConstantsCircuit::default();
-
-        test_supernova_recursive_circuit_with::<Secp256k1Engine>(
-            &params1,
-            &params2,
-            ro_consts1,
-            ro_consts2,
-            &expect!["10283"],
-            &expect!["10996"],
             1,
         );
         // TODO: extend to num_augmented_circuits >= 2

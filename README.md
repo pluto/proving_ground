@@ -2,3 +2,8 @@
 
 > [!NOTE]
 > This repository is a fork of the original hosted at [https://github.com/microsoft/nova](https://github.com/microsoft/nova) and also forked from [https://github.com/argumentcomputer/arecibo](https://github.com/argumentcomputer/arecibo) currently, but will likely be so different in the future that those are just motivation.
+
+## Notes
+
+### deny
+I removed deny.toml, but having this could be good to use actually,

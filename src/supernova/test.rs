@@ -10,10 +10,7 @@ use super::{utils::get_selector_vec_from_index, *};
 use crate::{
     bellpepper::test_shape_cs::TestShapeCS,
     gadgets::{alloc_one, alloc_zero},
-    provider::{
-        poseidon::PoseidonConstantsCircuit, Bn256EngineIPA, PallasEngine, Secp256k1Engine,
-        VestaEngine,
-    },
+    provider::{poseidon::PoseidonConstantsCircuit, Bn256EngineIPA, GrumpkinEngine},
     supernova::circuit::{StepCircuit, TrivialCircuit},
     traits::snark::default_ck_hint,
 };
@@ -452,7 +449,7 @@ where
 #[tracing_test::traced_test]
 fn test_trivial_nivc() {
     // Experimenting with selecting the running claims for nifs
-    test_trivial_nivc_with::<PallasEngine>();
+    test_trivial_nivc_with::<Bn256EngineIPA>();
 }
 
 // In the following we use 1 to refer to the primary, and 2 to refer to the
@@ -565,10 +562,10 @@ fn test_recursive_circuit_with<E1>(
 fn test_recursive_circuit() {
     let params1 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, true);
     let params2 = SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, false);
-    let ro_consts1: ROConstantsCircuit<VestaEngine> = PoseidonConstantsCircuit::default();
-    let ro_consts2: ROConstantsCircuit<PallasEngine> = PoseidonConstantsCircuit::default();
+    let ro_consts1: ROConstantsCircuit<GrumpkinEngine> = PoseidonConstantsCircuit::default();
+    let ro_consts2: ROConstantsCircuit<Bn256EngineIPA> = PoseidonConstantsCircuit::default();
 
-    test_recursive_circuit_with::<PallasEngine>(
+    test_recursive_circuit_with::<Bn256EngineIPA>(
         &params1,
         &params2,
         ro_consts1,
@@ -612,33 +609,11 @@ fn test_supernova_pp_digest() {
         OPCODE_1, OPCODE_1, OPCODE_0, OPCODE_0, OPCODE_1, OPCODE_1, OPCODE_0, OPCODE_0, OPCODE_1,
         OPCODE_1,
     ]; // Rom can be arbitrary length.
-    let test_rom = TestROM::<PallasEngine>::new(rom);
-
-    test_pp_digest_with::<PallasEngine, _>(
-        &test_rom,
-        &expect!["698b3592bf271c0cc53245aee71ec3f8e0d16486b3efc73be290a0af27605b01"],
-    );
-
-    let rom = vec![
-        OPCODE_1, OPCODE_1, OPCODE_0, OPCODE_0, OPCODE_1, OPCODE_1, OPCODE_0, OPCODE_0, OPCODE_1,
-        OPCODE_1,
-    ]; // Rom can be arbitrary length.
     let test_rom_grumpkin = TestROM::<Bn256EngineIPA>::new(rom);
 
     test_pp_digest_with::<Bn256EngineIPA, _>(
         &test_rom_grumpkin,
         &expect!["30418e576c11dd698054a6cc69d1b1e43ddf0f562abfb50b777147afad741a01"],
-    );
-
-    let rom = vec![
-        OPCODE_1, OPCODE_1, OPCODE_0, OPCODE_0, OPCODE_1, OPCODE_1, OPCODE_0, OPCODE_0, OPCODE_1,
-        OPCODE_1,
-    ]; // Rom can be arbitrary length.
-    let test_rom_secp = TestROM::<Secp256k1Engine>::new(rom);
-
-    test_pp_digest_with::<Secp256k1Engine, _>(
-        &test_rom_secp,
-        &expect!["c94ee4e2870e34d6d057aa66157f8315879ecf2692ab9d1e2567c5830bed1103"],
     );
 }
 
@@ -897,7 +872,5 @@ where
 
 #[test]
 fn test_nivc_nondet() {
-    test_nivc_nondet_with::<PallasEngine>();
     test_nivc_nondet_with::<Bn256EngineIPA>();
-    test_nivc_nondet_with::<Secp256k1Engine>();
 }

@@ -95,7 +95,6 @@ impl<Scalar: PrimeField> FromIterator<Scalar> for EqPolynomial<Scalar> {
 
 #[cfg(test)]
 mod tests {
-    use pasta_curves::Fp;
 
     use super::*;
     use crate::provider;
@@ -120,8 +119,6 @@ mod tests {
 
     #[test]
     fn test_eq_polynomial() {
-        test_eq_polynomial_with::<Fp>();
         test_eq_polynomial_with::<provider::bn256_grumpkin::bn256::Scalar>();
-        test_eq_polynomial_with::<provider::secp_secq::secp256k1::Scalar>();
     }
 }

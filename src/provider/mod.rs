@@ -4,16 +4,13 @@
 // public modules to be used as an evaluation engine with Spartan
 pub mod hyperkzg;
 pub mod ipa_pc;
-pub mod non_hiding_zeromorph;
 
 // crate-public modules, made crate-public mostly for tests
 pub(crate) mod bn256_grumpkin;
-mod pasta;
 mod pedersen;
 pub(crate) mod poseidon;
-pub(crate) mod secp_secq;
 pub(crate) mod traits;
-// a non-hiding variant of {kzg, zeromorph}
+// a non-hiding variant of kzg
 mod kzg_commitment;
 pub(crate) mod util;
 
@@ -22,7 +19,6 @@ mod keccak;
 mod tests;
 
 use halo2curves::bn256::Bn256;
-use pasta_curves::{pallas, vesta};
 
 use self::kzg_commitment::KZGCommitmentEngine;
 use crate::{
@@ -31,7 +27,6 @@ use crate::{
         keccak::Keccak256Transcript,
         pedersen::CommitmentEngine as PedersenCommitmentEngine,
         poseidon::{PoseidonRO, PoseidonROCircuit},
-        secp_secq::{secp256k1, secq256k1},
     },
     traits::{CurveCycleEquipped, Engine},
 };
@@ -106,74 +101,6 @@ impl CurveCycleEquipped for Bn256EngineZM {
     type Secondary = GrumpkinEngine;
 }
 
-/// An implementation of the Nova `Engine` trait with Secp256k1 curve and
-/// Pedersen commitment scheme
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Secp256k1Engine;
-
-/// An implementation of the Nova `Engine` trait with Secp256k1 curve and
-/// Pedersen commitment scheme
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct Secq256k1Engine;
-
-impl Engine for Secp256k1Engine {
-    type Base = secp256k1::Base;
-    type Scalar = secp256k1::Scalar;
-    type GE = secp256k1::Point;
-    type RO = PoseidonRO<Self::Base, Self::Scalar>;
-    type ROCircuit = PoseidonROCircuit<Self::Base>;
-    type TE = Keccak256Transcript<Self>;
-    type CE = PedersenCommitmentEngine<Self>;
-}
-
-impl Engine for Secq256k1Engine {
-    type Base = secq256k1::Base;
-    type Scalar = secq256k1::Scalar;
-    type GE = secq256k1::Point;
-    type RO = PoseidonRO<Self::Base, Self::Scalar>;
-    type ROCircuit = PoseidonROCircuit<Self::Base>;
-    type TE = Keccak256Transcript<Self>;
-    type CE = PedersenCommitmentEngine<Self>;
-}
-
-impl CurveCycleEquipped for Secp256k1Engine {
-    type Secondary = Secq256k1Engine;
-}
-
-/// An implementation of the Nova `Engine` trait with Pallas curve and Pedersen
-/// commitment scheme
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct PallasEngine;
-
-/// An implementation of the Nova `Engine` trait with Vesta curve and Pedersen
-/// commitment scheme
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct VestaEngine;
-
-impl Engine for PallasEngine {
-    type Base = pallas::Base;
-    type Scalar = pallas::Scalar;
-    type GE = pallas::Point;
-    type RO = PoseidonRO<Self::Base, Self::Scalar>;
-    type ROCircuit = PoseidonROCircuit<Self::Base>;
-    type TE = Keccak256Transcript<Self>;
-    type CE = PedersenCommitmentEngine<Self>;
-}
-
-impl Engine for VestaEngine {
-    type Base = vesta::Base;
-    type Scalar = vesta::Scalar;
-    type GE = vesta::Point;
-    type RO = PoseidonRO<Self::Base, Self::Scalar>;
-    type ROCircuit = PoseidonROCircuit<Self::Base>;
-    type TE = Keccak256Transcript<Self>;
-    type CE = PedersenCommitmentEngine<Self>;
-}
-
-impl CurveCycleEquipped for PallasEngine {
-    type Secondary = VestaEngine;
-}
-
 #[cfg(test)]
 mod test {
     use std::io::Read;
@@ -182,13 +109,11 @@ mod test {
     use group::{ff::Field, Curve, Group};
     use halo2curves::{CurveAffine, CurveExt};
     use itertools::Itertools as _;
-    use pasta_curves::{pallas, vesta};
     use rand_core::OsRng;
     use sha3::Shake256;
 
     use crate::provider::{
         bn256_grumpkin::{bn256, grumpkin},
-        secp_secq::{secp256k1, secq256k1},
         traits::DlogGroup,
         util::msm::cpu_best_msm,
     };
@@ -240,26 +165,12 @@ mod test {
 
     #[test]
     fn test_msm() {
-        test_msm_with::<pallas::Scalar, pallas::Affine>();
-        test_msm_with::<vesta::Scalar, vesta::Affine>();
         test_msm_with::<bn256::Scalar, bn256::Affine>();
         test_msm_with::<grumpkin::Scalar, grumpkin::Affine>();
-        test_msm_with::<secp256k1::Scalar, secp256k1::Affine>();
-        test_msm_with::<secq256k1::Scalar, secq256k1::Affine>();
     }
 
     #[test]
     fn test_bn256_from_label() {
         impl_cycle_pair_test!(bn256);
-    }
-
-    #[test]
-    fn test_pallas_from_label() {
-        impl_cycle_pair_test!(pallas);
-    }
-
-    #[test]
-    fn test_secp256k1_from_label() {
-        impl_cycle_pair_test!(secp256k1);
     }
 }

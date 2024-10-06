@@ -783,11 +783,11 @@ impl<Scalar: PrimeField> Polynomial<Scalar> {
 #[cfg(test)]
 mod tests {
     use bellpepper_core::{test_cs::TestConstraintSystem, Circuit};
-    use pasta_curves::pallas::Scalar;
     #[cfg(not(target_arch = "wasm32"))]
     use proptest::prelude::*;
 
     use super::*;
+    use crate::provider::bn256_grumpkin::bn256::Scalar;
 
     pub struct PolynomialMultiplier<Scalar> {
         pub a: Vec<Scalar>,

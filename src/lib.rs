@@ -1047,41 +1047,41 @@ type CE<E> = <E as Engine>::CE;
 //         test_pp_digest_with::<PallasEngine, _, _, EE<_>, EE<_>>(
 //             &TrivialCircuit::default(),
 //             &TrivialCircuit::default(),
-//             
+//
 // &expect!["e5a6a85b77f3fb958b69722a5a21bf656fd21a6b5a012708a4b086b6be6d2b03"],
 //         );
 
 //         test_pp_digest_with::<PallasEngine, _, _, EE<_>, EE<_>>(
 //             &CubicCircuit::default(),
 //             &TrivialCircuit::default(),
-//             
+//
 // &expect!["ec707a8b822baebca114b6e61b238374f9ed358c542dd37ee73febb47832cd01"],
 //         );
 
 //         test_pp_digest_with::<Bn256EngineIPA, _, _, EE<_>, EE<_>>(
 //             &TrivialCircuit::default(),
 //             &TrivialCircuit::default(),
-//             
+//
 // &expect!["df52de22456157eb056003d4dc580a167ab8ce40a151c9944ea09a6fd0028600"],
 //         );
 
 //         test_pp_digest_with::<Bn256EngineIPA, _, _, EE<_>, EE<_>>(
 //             &CubicCircuit::default(),
 //             &TrivialCircuit::default(),
-//             
+//
 // &expect!["b3ad0f4b734c5bd2ab9e83be8ee0cbaaa120e5cd0270b51cb9d7778a33f0b801"],
 //         );
 
 //         test_pp_digest_with::<Secp256k1Engine, _, _, EE<_>, EE<_>>(
 //             &TrivialCircuit::default(),
 //             &TrivialCircuit::default(),
-//             
+//
 // &expect!["e1feca53664212ee750da857c726b2a09bb30b2964f22ea85a19b58c9eaf5701"],
 //         );
 //         test_pp_digest_with::<Secp256k1Engine, _, _, EE<_>, EE<_>>(
 //             &CubicCircuit::default(),
 //             &TrivialCircuit::default(),
-//             
+//
 // &expect!["4ad6b10b6fd24fecba49f08d35bc874a6da9c77735bc0bcf4b78b1914a97e602"],
 //         );
 //     }

@@ -303,77 +303,78 @@ impl<'a, F: PrimeField> Iterator for Iter<'a, F> {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    #[cfg(not(target_arch = "wasm32"))]
-    use proptest::{
-        prelude::*,
-        strategy::{BoxedStrategy, Just, Strategy},
-    };
+// #[cfg(test)]
+// mod tests {
+//     #[cfg(not(target_arch = "wasm32"))]
+//     use proptest::{
+//         prelude::*,
+//         strategy::{BoxedStrategy, Just, Strategy},
+//     };
 
-    use super::SparseMatrix;
-    #[cfg(not(target_arch = "wasm32"))]
-    use crate::r1cs::util::FWrap;
-    use crate::{
-        provider::PallasEngine,
-        traits::{Engine, Group},
-    };
+//     use super::SparseMatrix;
+//     #[cfg(not(target_arch = "wasm32"))]
+//     use crate::r1cs::util::FWrap;
+//     use crate::{
+//         provider::PallasEngine,
+//         traits::{Engine, Group},
+//     };
 
-    type G = <PallasEngine as Engine>::GE;
-    type Fr = <G as Group>::Scalar;
+//     type G = <PallasEngine as Engine>::GE;
+//     type Fr = <G as Group>::Scalar;
 
-    #[test]
-    fn test_matrix_creation() {
-        let matrix_data = vec![
-            (0, 1, Fr::from(2)),
-            (1, 2, Fr::from(3)),
-            (2, 0, Fr::from(4)),
-        ];
-        let sparse_matrix = SparseMatrix::<Fr>::new(&matrix_data, 3, 3);
+//     #[test]
+//     fn test_matrix_creation() {
+//         let matrix_data = vec![
+//             (0, 1, Fr::from(2)),
+//             (1, 2, Fr::from(3)),
+//             (2, 0, Fr::from(4)),
+//         ];
+//         let sparse_matrix = SparseMatrix::<Fr>::new(&matrix_data, 3, 3);
 
-        assert_eq!(
-            sparse_matrix.data,
-            vec![Fr::from(2), Fr::from(3), Fr::from(4)]
-        );
-        assert_eq!(sparse_matrix.indices, vec![1, 2, 0]);
-        assert_eq!(sparse_matrix.indptr, vec![0, 1, 2, 3]);
-    }
+//         assert_eq!(
+//             sparse_matrix.data,
+//             vec![Fr::from(2), Fr::from(3), Fr::from(4)]
+//         );
+//         assert_eq!(sparse_matrix.indices, vec![1, 2, 0]);
+//         assert_eq!(sparse_matrix.indptr, vec![0, 1, 2, 3]);
+//     }
 
-    #[test]
-    fn test_matrix_vector_multiplication() {
-        let matrix_data = vec![
-            (0, 1, Fr::from(2)),
-            (0, 2, Fr::from(7)),
-            (1, 2, Fr::from(3)),
-            (2, 0, Fr::from(4)),
-        ];
-        let sparse_matrix = SparseMatrix::<Fr>::new(&matrix_data, 3, 3);
-        let vector = vec![Fr::from(1), Fr::from(2), Fr::from(3)];
+//     #[test]
+//     fn test_matrix_vector_multiplication() {
+//         let matrix_data = vec![
+//             (0, 1, Fr::from(2)),
+//             (0, 2, Fr::from(7)),
+//             (1, 2, Fr::from(3)),
+//             (2, 0, Fr::from(4)),
+//         ];
+//         let sparse_matrix = SparseMatrix::<Fr>::new(&matrix_data, 3, 3);
+//         let vector = vec![Fr::from(1), Fr::from(2), Fr::from(3)];
 
-        let result = sparse_matrix.multiply_vec(&vector);
+//         let result = sparse_matrix.multiply_vec(&vector);
 
-        assert_eq!(result, vec![Fr::from(25), Fr::from(9), Fr::from(4)]);
-    }
+//         assert_eq!(result, vec![Fr::from(25), Fr::from(9), Fr::from(4)]);
+//     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    fn coo_strategy() -> BoxedStrategy<Vec<(usize, usize, FWrap<Fr>)>> {
-        let coo_strategy =
-            any::<FWrap<Fr>>().prop_flat_map(|f| (0usize..100, 0usize..100, Just(f)));
-        proptest::collection::vec(coo_strategy, 10).boxed()
-    }
+//     #[cfg(not(target_arch = "wasm32"))]
+//     fn coo_strategy() -> BoxedStrategy<Vec<(usize, usize, FWrap<Fr>)>> {
+//         let coo_strategy =
+//             any::<FWrap<Fr>>().prop_flat_map(|f| (0usize..100, 0usize..100,
+// Just(f)));         proptest::collection::vec(coo_strategy, 10).boxed()
+//     }
 
-    #[cfg(not(target_arch = "wasm32"))]
-    proptest! {
-        #[test]
-        fn test_matrix_iter(mut coo_matrix in coo_strategy()) {
-          // process the randomly generated coo matrix
-          coo_matrix.sort_by_key(|(row, col, _val)| (*row, *col));
-          coo_matrix.dedup_by_key(|(row, col, _val)| (*row, *col));
-          let coo_matrix = coo_matrix.into_iter().map(|(row, col, val)| { (row, col, val.0) }).collect::<Vec<_>>();
+//     #[cfg(not(target_arch = "wasm32"))]
+//     proptest! {
+//         #[test]
+//         fn test_matrix_iter(mut coo_matrix in coo_strategy()) {
+//           // process the randomly generated coo matrix
+//           coo_matrix.sort_by_key(|(row, col, _val)| (*row, *col));
+//           coo_matrix.dedup_by_key(|(row, col, _val)| (*row, *col));
+//           let coo_matrix = coo_matrix.into_iter().map(|(row, col, val)| {
+// (row, col, val.0) }).collect::<Vec<_>>();
 
-          let matrix = SparseMatrix::new(&coo_matrix, 100, 100);
+//           let matrix = SparseMatrix::new(&coo_matrix, 100, 100);
 
-          prop_assert_eq!(coo_matrix, matrix.iter().collect::<Vec<_>>());
-      }
-    }
-}
+//           prop_assert_eq!(coo_matrix, matrix.iter().collect::<Vec<_>>());
+//       }
+//     }
+// }

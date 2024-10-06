@@ -197,10 +197,7 @@ mod tests {
         bellpepper::solver::SatisfyingAssignment,
         constants::NUM_CHALLENGE_BITS,
         gadgets::le_bits_to_num,
-        provider::{
-            Bn256EngineKZG, GrumpkinEngine, PallasEngine, Secp256k1Engine, Secq256k1Engine,
-            VestaEngine,
-        },
+        provider::{Bn256EngineKZG, GrumpkinEngine},
         traits::Engine,
     };
 
@@ -241,11 +238,7 @@ mod tests {
 
     #[test]
     fn test_poseidon_ro() {
-        test_poseidon_ro_with::<PallasEngine>();
-        test_poseidon_ro_with::<VestaEngine>();
         test_poseidon_ro_with::<Bn256EngineKZG>();
         test_poseidon_ro_with::<GrumpkinEngine>();
-        test_poseidon_ro_with::<Secp256k1Engine>();
-        test_poseidon_ro_with::<Secq256k1Engine>();
     }
 }

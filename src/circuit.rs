@@ -451,8 +451,8 @@ impl<'a, E: Engine, SC: StepCircuit<E::Base>> NovaAugmentedCircuit<'a, E, SC> {
 //         let zero2 = <<E1 as Engine>::Base as Field>::ZERO;
 //         let mut cs2 = SatisfyingAssignment::<Dual<E1>>::new();
 //         let inputs2: NovaAugmentedCircuitInputs<E1> =
-// NovaAugmentedCircuitInputs::new(             
-// scalar_as_base::<Dual<E1>>(zero2), // pass zero for testing             
+// NovaAugmentedCircuitInputs::new(
+// scalar_as_base::<Dual<E1>>(zero2), // pass zero for testing
 // zero2,             vec![zero2],
 //             None,
 //             None,

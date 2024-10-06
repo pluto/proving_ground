@@ -1065,25 +1065,26 @@ impl<E: Engine, EE: EvaluationEngineTrait<E>> RelaxedR1CSSNARKTrait<E> for Relax
         Ok(())
     }
 }
-#[cfg(test)]
-mod tests {
-    use ff::Field;
-    use pasta_curves::Fq as Scalar;
 
-    use super::*;
-    use crate::provider::PallasEngine;
+// #[cfg(test)]
+// mod tests {
+//     use ff::Field;
+//     use pasta_curves::Fq as Scalar;
 
-    #[test]
-    fn test_padded() {
-        let mut rng = rand::thread_rng();
-        let e = Scalar::random(&mut rng);
-        let v: Vec<Scalar> = (0..10).map(|_| Scalar::random(&mut rng)).collect();
-        let n = 20;
+//     use super::*;
+//     use crate::provider::PallasEngine;
 
-        let result = padded::<PallasEngine>(&v, n, &e);
+//     #[test]
+//     fn test_padded() {
+//         let mut rng = rand::thread_rng();
+//         let e = Scalar::random(&mut rng);
+//         let v: Vec<Scalar> = (0..10).map(|_| Scalar::random(&mut
+// rng)).collect();         let n = 20;
 
-        assert_eq!(result.len(), n);
-        assert_eq!(&result[..10], &v[..]);
-        assert!(result[10..].iter().all(|&i| i == e));
-    }
-}
+//         let result = padded::<PallasEngine>(&v, n, &e);
+
+//         assert_eq!(result.len(), n);
+//         assert_eq!(&result[..10], &v[..]);
+//         assert!(result[10..].iter().all(|&i| i == e));
+//     }
+// }

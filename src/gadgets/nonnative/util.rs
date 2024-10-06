@@ -287,11 +287,7 @@ mod tests {
 
     #[test]
     fn test_repr_is_le() {
-        test_repr_is_le_with::<pasta_curves::pallas::Scalar>();
-        test_repr_is_le_with::<pasta_curves::pallas::Base>();
         test_repr_is_le_with::<crate::provider::bn256_grumpkin::bn256::Scalar>();
         test_repr_is_le_with::<crate::provider::bn256_grumpkin::bn256::Base>();
-        test_repr_is_le_with::<crate::provider::secp_secq::secp256k1::Scalar>();
-        test_repr_is_le_with::<crate::provider::secp_secq::secp256k1::Base>();
     }
 }

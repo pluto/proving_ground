@@ -815,7 +815,7 @@ pub(crate) mod tests {
 
     use super::*;
     use crate::{
-        provider::{Bn256EngineIPA, Bn256EngineKZG, PallasEngine, Secp256k1Engine},
+        provider::{Bn256EngineIPA, Bn256EngineKZG},
         r1cs::sparse::SparseMatrix,
         traits::Engine,
     };
@@ -896,9 +896,7 @@ pub(crate) mod tests {
 
     #[test]
     fn test_pad_tiny_r1cs() {
-        test_pad_tiny_r1cs_with::<PallasEngine>();
         test_pad_tiny_r1cs_with::<Bn256EngineKZG>();
-        test_pad_tiny_r1cs_with::<Secp256k1Engine>();
     }
 
     fn test_random_r1cs_with<E: Engine>() {

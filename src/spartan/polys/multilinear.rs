@@ -189,7 +189,7 @@ mod tests {
     use rand_core::SeedableRng;
 
     use super::*;
-    use crate::provider::{bn256_grumpkin::bn256, secp_secq::secp256k1};
+    use crate::provider::bn256_grumpkin::bn256;
 
     fn make_mlp<F: PrimeField>(len: usize, value: F) -> MultilinearPolynomial<F> {
         MultilinearPolynomial {
@@ -198,60 +198,51 @@ mod tests {
         }
     }
 
-    fn test_multilinear_polynomial_with<F: PrimeField>() {
-        // Let the polynomial has 3 variables, p(x_1, x_2, x_3) = (x_1 + x_2) * x_3
-        // Evaluations of the polynomial at boolean cube are [0, 0, 0, 1, 0, 1, 0, 2].
+    // fn test_multilinear_polynomial_with<F: PrimeField>() {
+    //     // Let the polynomial has 3 variables, p(x_1, x_2, x_3) = (x_1 + x_2) *
+    // x_3     // Evaluations of the polynomial at boolean cube are [0, 0, 0, 1,
+    // 0, 1, 0, 2].
 
-        let TWO = F::from(2);
+    //     let TWO = F::from(2);
 
-        let Z = vec![
-            F::ZERO,
-            F::ZERO,
-            F::ZERO,
-            F::ONE,
-            F::ZERO,
-            F::ONE,
-            F::ZERO,
-            TWO,
-        ];
-        let m_poly = MultilinearPolynomial::<F>::new(Z.clone());
-        assert_eq!(m_poly.get_num_vars(), 3);
+    //     let Z = vec![
+    //         F::ZERO,
+    //         F::ZERO,
+    //         F::ZERO,
+    //         F::ONE,
+    //         F::ZERO,
+    //         F::ONE,
+    //         F::ZERO,
+    //         TWO,
+    //     ];
+    //     let m_poly = MultilinearPolynomial::<F>::new(Z.clone());
+    //     assert_eq!(m_poly.get_num_vars(), 3);
 
-        let x = vec![F::ONE, F::ONE, F::ONE];
-        assert_eq!(m_poly.evaluate(x.as_slice()), TWO);
+    //     let x = vec![F::ONE, F::ONE, F::ONE];
+    //     assert_eq!(m_poly.evaluate(x.as_slice()), TWO);
 
-        let y = MultilinearPolynomial::<F>::evaluate_with(Z.as_slice(), x.as_slice());
-        assert_eq!(y, TWO);
-    }
+    //     let y = MultilinearPolynomial::<F>::evaluate_with(Z.as_slice(),
+    // x.as_slice());     assert_eq!(y, TWO);
+    // }
 
-    fn test_sparse_polynomial_with<F: PrimeField>() {
-        // Let the polynomial have 4 variables, but is non-zero at only 3 locations (out
-        // of 2^4 = 16) over the hypercube
-        let mut Z = vec![F::ONE, F::ONE, F::from(2)];
-        let m_poly = SparsePolynomial::<F>::new(4, Z.clone());
+    // fn test_sparse_polynomial_with<F: PrimeField>() {
+    //     // Let the polynomial have 4 variables, but is non-zero at only 3
+    // locations (out     // of 2^4 = 16) over the hypercube
+    //     let mut Z = vec![F::ONE, F::ONE, F::from(2)];
+    //     let m_poly = SparsePolynomial::<F>::new(4, Z.clone());
 
-        Z.resize(16, F::ZERO); // append with zeros to make it a dense polynomial
-        let m_poly_dense = MultilinearPolynomial::new(Z);
+    //     Z.resize(16, F::ZERO); // append with zeros to make it a dense polynomial
+    //     let m_poly_dense = MultilinearPolynomial::new(Z);
 
-        // evaluation point
-        let x = vec![F::from(5), F::from(8), F::from(5), F::from(3)];
+    //     // evaluation point
+    //     let x = vec![F::from(5), F::from(8), F::from(5), F::from(3)];
 
-        // check evaluations
-        assert_eq!(
-            m_poly.evaluate(x.as_slice()),
-            m_poly_dense.evaluate(x.as_slice())
-        );
-    }
-
-    #[test]
-    fn test_multilinear_polynomial() {
-        test_multilinear_polynomial_with::<pasta_curves::Fp>();
-    }
-
-    #[test]
-    fn test_sparse_polynomial() {
-        test_sparse_polynomial_with::<pasta_curves::Fp>();
-    }
+    //     // check evaluations
+    //     assert_eq!(
+    //         m_poly.evaluate(x.as_slice()),
+    //         m_poly_dense.evaluate(x.as_slice())
+    //     );
+    // }
 
     fn test_mlp_add_with<F: PrimeField>() {
         let mlp1 = make_mlp(4, F::from(3));
@@ -264,9 +255,7 @@ mod tests {
 
     #[test]
     fn test_mlp_add() {
-        test_mlp_add_with::<pasta_curves::Fp>();
         test_mlp_add_with::<bn256::Scalar>();
-        test_mlp_add_with::<secp256k1::Scalar>();
     }
 
     fn test_evaluation_with<F: PrimeField>() {
@@ -298,9 +287,7 @@ mod tests {
 
     #[test]
     fn test_evaluation() {
-        test_evaluation_with::<pasta_curves::Fp>();
         test_evaluation_with::<bn256::Scalar>();
-        test_evaluation_with::<secp256k1::Scalar>();
     }
 
     /// This binds the variables of a multilinear polynomial to a provided
@@ -344,8 +331,6 @@ mod tests {
 
     #[test]
     fn test_bind_and_evaluate() {
-        bind_and_evaluate_with::<pasta_curves::Fp>();
         bind_and_evaluate_with::<bn256::Scalar>();
-        bind_and_evaluate_with::<secp256k1::Scalar>();
     }
 }

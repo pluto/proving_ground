@@ -783,7 +783,8 @@ impl<G: Group> AllocatedPointNonInfinity<G> {
 mod tests {
     use expect_test::{expect, Expect};
     use ff::{Field, PrimeFieldBits};
-    use pasta_curves::{arithmetic::CurveAffine, group::Curve, pallas, vesta};
+    use group::Curve;
+    use halo2curves::CurveAffine;
     use rand::rngs::OsRng;
 
     use super::*;
@@ -795,9 +796,7 @@ mod tests {
         },
         provider::{
             bn256_grumpkin::{bn256, grumpkin},
-            secp_secq::{secp256k1, secq256k1},
-            Bn256EngineIPA, Bn256EngineKZG, GrumpkinEngine, PallasEngine, Secp256k1Engine,
-            Secq256k1Engine, VestaEngine,
+            Bn256EngineIPA, Bn256EngineKZG, GrumpkinEngine,
         },
         traits::{snark::default_ck_hint, Engine},
     };
@@ -930,14 +929,8 @@ mod tests {
 
     #[test]
     fn test_ecc_ops() {
-        test_ecc_ops_with::<pallas::Affine, <PallasEngine as Engine>::GE>();
-        test_ecc_ops_with::<vesta::Affine, <VestaEngine as Engine>::GE>();
-
         test_ecc_ops_with::<bn256::Affine, <Bn256EngineIPA as Engine>::GE>();
         test_ecc_ops_with::<grumpkin::Affine, <GrumpkinEngine as Engine>::GE>();
-
-        test_ecc_ops_with::<secp256k1::Affine, <Secp256k1Engine as Engine>::GE>();
-        test_ecc_ops_with::<secq256k1::Affine, <Secq256k1Engine as Engine>::GE>();
     }
 
     fn test_ecc_ops_with<C, G>()
@@ -1017,9 +1010,6 @@ mod tests {
 
     #[test]
     fn test_ecc_circuit_ops() {
-        test_ecc_circuit_ops_with::<PallasEngine, VestaEngine>(&expect!["2704"], &expect!["2692"]);
-        test_ecc_circuit_ops_with::<VestaEngine, PallasEngine>(&expect!["2704"], &expect!["2692"]);
-
         test_ecc_circuit_ops_with::<Bn256EngineIPA, GrumpkinEngine>(
             &expect!["2738"],
             &expect!["2724"],
@@ -1027,15 +1017,6 @@ mod tests {
         test_ecc_circuit_ops_with::<GrumpkinEngine, Bn256EngineIPA>(
             &expect!["2738"],
             &expect!["2724"],
-        );
-
-        test_ecc_circuit_ops_with::<Secp256k1Engine, Secq256k1Engine>(
-            &expect!["2670"],
-            &expect!["2660"],
-        );
-        test_ecc_circuit_ops_with::<Secq256k1Engine, Secp256k1Engine>(
-            &expect!["2670"],
-            &expect!["2660"],
         );
     }
 
@@ -1086,14 +1067,8 @@ mod tests {
 
     #[test]
     fn test_ecc_circuit_add_equal() {
-        test_ecc_circuit_add_equal_with::<PallasEngine, VestaEngine>();
-        test_ecc_circuit_add_equal_with::<VestaEngine, PallasEngine>();
-
         test_ecc_circuit_add_equal_with::<Bn256EngineKZG, GrumpkinEngine>();
         test_ecc_circuit_add_equal_with::<GrumpkinEngine, Bn256EngineKZG>();
-
-        test_ecc_circuit_add_equal_with::<Secp256k1Engine, Secq256k1Engine>();
-        test_ecc_circuit_add_equal_with::<Secq256k1Engine, Secp256k1Engine>();
     }
 
     fn test_ecc_circuit_add_equal_with<E1, E2>()
@@ -1146,29 +1121,11 @@ mod tests {
 
     #[test]
     fn test_ecc_circuit_add_negation() {
-        test_ecc_circuit_add_negation_with::<PallasEngine, VestaEngine>(
-            &expect!["39"],
-            &expect!["34"],
-        );
-        test_ecc_circuit_add_negation_with::<VestaEngine, PallasEngine>(
-            &expect!["39"],
-            &expect!["34"],
-        );
-
         test_ecc_circuit_add_negation_with::<Bn256EngineIPA, GrumpkinEngine>(
             &expect!["39"],
             &expect!["34"],
         );
         test_ecc_circuit_add_negation_with::<GrumpkinEngine, Bn256EngineIPA>(
-            &expect!["39"],
-            &expect!["34"],
-        );
-
-        test_ecc_circuit_add_negation_with::<Secp256k1Engine, Secq256k1Engine>(
-            &expect!["39"],
-            &expect!["34"],
-        );
-        test_ecc_circuit_add_negation_with::<Secq256k1Engine, Secp256k1Engine>(
             &expect!["39"],
             &expect!["34"],
         );

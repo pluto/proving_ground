@@ -18,7 +18,7 @@ mod tests {
             shape_cs::ShapeCS,
             solver::SatisfyingAssignment,
         },
-        provider::{Bn256EngineKZG, PallasEngine, Secp256k1Engine},
+        provider::Bn256EngineKZG,
         traits::{snark::default_ck_hint, Engine},
     };
 
@@ -59,8 +59,6 @@ mod tests {
 
     #[test]
     fn test_alloc_bit() {
-        test_alloc_bit_with::<PallasEngine>();
         test_alloc_bit_with::<Bn256EngineKZG>();
-        test_alloc_bit_with::<Secp256k1Engine>();
     }
 }

@@ -172,7 +172,7 @@ mod tests {
         },
         constants::NIO_CYCLE_FOLD,
         gadgets::scalar_as_base,
-        provider::{Bn256EngineKZG, PallasEngine, Secp256k1Engine},
+        provider::Bn256EngineKZG,
         traits::{
             commitment::CommitmentEngineTrait, snark::default_ck_hint, CurveCycleEquipped, Dual,
         },
@@ -202,9 +202,7 @@ mod tests {
 
     #[test]
     fn test_cyclefold_circuit_size() {
-        test_cyclefold_circuit_size_with::<PallasEngine>(&expect!("2090"), &expect!("2081"));
         test_cyclefold_circuit_size_with::<Bn256EngineKZG>(&expect!("2090"), &expect!("2081"));
-        test_cyclefold_circuit_size_with::<Secp256k1Engine>(&expect!("2090"), &expect!("2081"));
     }
 
     fn test_cyclefold_circuit_sat_with<E: CurveCycleEquipped>() {
@@ -282,8 +280,6 @@ mod tests {
 
     #[test]
     fn test_cyclefold_circuit_sat() {
-        test_cyclefold_circuit_sat_with::<PallasEngine>();
         test_cyclefold_circuit_sat_with::<Bn256EngineKZG>();
-        test_cyclefold_circuit_sat_with::<Secp256k1Engine>();
     }
 }
