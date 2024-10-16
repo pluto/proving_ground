@@ -99,7 +99,7 @@ where
 /// Auxiliary [`PublicParams`] information about the commitment keys and
 /// secondary circuit. This is used as a helper struct when reconstructing
 /// [`PublicParams`] downstream in lurk.
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(bound = "")]
 pub struct AuxParams<E1>
 where
@@ -174,29 +174,7 @@ where
         let ro_consts_circuit_primary: ROConstantsCircuit<Dual<E1>> =
             ROConstantsCircuit::<Dual<E1>>::default();
 
-        let circuit_shapes = (0..num_circuits)
-            .map(|i| {
-                let c_primary = non_uniform_circuit.primary_circuit(i);
-                let F_arity = c_primary.arity();
-                // Initialize ck for the primary
-                let circuit_primary: SuperNovaAugmentedCircuit<'_, Dual<E1>, NC::C1> =
-                    SuperNovaAugmentedCircuit::new(
-                        &augmented_circuit_params_primary,
-                        None,
-                        &c_primary,
-                        ro_consts_circuit_primary.clone(),
-                        num_circuits,
-                    );
-                let mut cs: ShapeCS<E1> = ShapeCS::new();
-                circuit_primary
-                    .synthesize(&mut cs)
-                    .expect("circuit synthesis failed");
-
-                // We use the largest commitment_key for all instances
-                let r1cs_shape_primary = cs.r1cs_shape();
-                R1CSWithArity::new(r1cs_shape_primary, F_arity)
-            })
-            .collect::<Vec<_>>();
+        let circuit_shapes = get_circuit_shapes(non_uniform_circuit);
 
         let ck_primary = Self::compute_primary_ck(&circuit_shapes, ck_hint1);
         let ck_primary = Arc::new(ck_primary);
@@ -387,6 +365,43 @@ where
             .map(|cs| &cs.r1cs_shape)
             .collect::<Vec<_>>()
     }
+}
+
+pub fn get_circuit_shapes<E1: CurveCycleEquipped, NC: NonUniformCircuit<E1>>(
+    non_uniform_circuit: &NC,
+) -> Vec<R1CSWithArity<E1>> {
+    let num_circuits = non_uniform_circuit.num_circuits();
+    let augmented_circuit_params_primary =
+        SuperNovaAugmentedCircuitParams::new(BN_LIMB_WIDTH, BN_N_LIMBS, true);
+
+    // ro_consts_circuit_primary are parameterized by E2 because the type alias uses
+    // E2::Base = E1::Scalar
+    let ro_consts_circuit_primary: ROConstantsCircuit<Dual<E1>> =
+        ROConstantsCircuit::<Dual<E1>>::default();
+
+    (0..num_circuits)
+        .map(|i| {
+            let c_primary = non_uniform_circuit.primary_circuit(i);
+            let F_arity = c_primary.arity();
+            // Initialize ck for the primary
+            let circuit_primary: SuperNovaAugmentedCircuit<'_, Dual<E1>, NC::C1> =
+                SuperNovaAugmentedCircuit::new(
+                    &augmented_circuit_params_primary,
+                    None,
+                    &c_primary,
+                    ro_consts_circuit_primary.clone(),
+                    num_circuits,
+                );
+            let mut cs: ShapeCS<E1> = ShapeCS::new();
+            circuit_primary
+                .synthesize(&mut cs)
+                .expect("circuit synthesis failed");
+
+            // We use the largest commitment_key for all instances
+            let r1cs_shape_primary = cs.r1cs_shape();
+            R1CSWithArity::new(r1cs_shape_primary, F_arity)
+        })
+        .collect::<Vec<_>>()
 }
 
 /// A resource buffer for SuperNova's [`RecursiveSNARK`] for storing scratch
